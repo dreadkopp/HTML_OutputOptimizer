@@ -53,11 +53,11 @@ $cache = new Predis\Client(
 
 $optimizer = new OutputOptimizer($cache, <root_dir>, <cache_dir>, <redis_pass>, <redis_db>, <redis_host>, <redis_port>);
 //optimal add local JS files
-$optimizer->addLocalJSPath(<path_to_local_js_file);
+$optimizer->addLocalJSPath(<path_to_local_js_file>);
 
 
-//use $optimizer in Outputbuffer or your Template Compiler
-$optimizer->sanitize_output(<output_html>);
+//use $optimizer in Outputbuffer or your Template Compiler for example in output buffer
+ob_start(array($optimizer, 'sanitize_output'));
 
 
 
