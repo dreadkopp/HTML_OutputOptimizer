@@ -8,6 +8,7 @@ Required:
 Redis Cache
 Webp
 PHP-Imagick
+PHP-curl
 PHP >=5.6
 ImageOtimizer "ps/image-optimizer"
 nohub
@@ -57,3 +58,15 @@ $optimizer->addLocalJSPath(<path_to_local_js_file);
 
 //use $optimizer in Outputbuffer or your Template Compiler
 $optimizer->sanitize_output(<output_html>);
+
+
+
+WHY?
+
+* to optimize Images which are added dynamically (for example in a webshop) or those that are served from a external source without optimization
+
+* to reduce requests by combining all JS into one
+
+* to re-arrange your JS to bottom if you need to use a template system without the possibility to define sections
+
+* to reduce your page size overall.
