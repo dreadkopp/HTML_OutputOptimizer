@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: arne
- * Date: 13.12.18
- * Time: 23:41
- */
 
 class OutputOptimizer
 {
