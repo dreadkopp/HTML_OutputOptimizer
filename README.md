@@ -33,6 +33,10 @@ Installation:
 
 Usage:
 
+//if you run this tool on the whole HTML output, echo DOCTYPE first since it will be stripped otherwise
+echo '<!DOCTYPE html>' . PHP_EOL;
+
+
 //create a RedisCache Client
 $cache = new Predis\Client(
     [
