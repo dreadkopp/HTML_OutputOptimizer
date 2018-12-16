@@ -66,8 +66,6 @@ class OutputOptimizer
         }
     });
 
-    /*rev up when in viewport*/
-
     $.fn.isInViewport = function () {
         if (typeof $(this).offset() !== "undefined") {
             var elementTop = $(this).offset().top;
@@ -183,13 +181,18 @@ class OutputOptimizer
 
 
             //2. find all inline js and collect
-            $searchinlineJS = '/<script\\b[^>]*>(.+?)<\\/script>/';
-            $buffer = preg_replace_callback($searchinlineJS, function($matches){
-                return $this->minifiyAndCacheJS($matches, $this->redis_pass, $this->redis_db);
-            }, $buffer);
+            $dom = new DOMDocument();
+            @$dom->loadHTML($buffer);
+            $script = $dom->getElementsByTagName('script');
+            foreach ($script as $js){
+                $js = $js->nodeValue;
+                $js = preg_replace('/<!--(.*)-->/Uis', '$1', $js);
+                $this->combined_js .= $js ;
+            }
 
 
-            //add our minified js
+
+            //add local js
             if (self::ADD_LOCAL_JS) {
                 foreach ($this->localjs as $local_js_path) {
                     $minified_js = file_get_contents($local_js_path);
