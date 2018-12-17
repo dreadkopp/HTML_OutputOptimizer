@@ -1,12 +1,7 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: arne
- * Date: 14.12.18
- * Time: 12:40
- */
 
-namespace includes\classes;
+
+namespace vendor\dreadkopp\HTML_OutputOptimizer;
 
 
 class ImageOptimizer
@@ -45,7 +40,7 @@ class ImageOptimizer
             $this->cache->expire($cachekey, $cachetime);
             $this->handleImage($cachepath,1024,true);
 
-            $factory = new \ImageOptimizer\OptimizerFactory();
+            $factory = new OptimizerFactory();
             $optimizer = $factory->get();
             $optimizer->optimize($cachepath);
         }

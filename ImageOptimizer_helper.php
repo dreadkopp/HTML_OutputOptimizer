@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: arne
- * Date: 14.12.18
- * Time: 13:01
- */
+
 
 $source = $argv[1];
 $path = $argv[2];
@@ -16,7 +11,7 @@ $cachetime = $argv[7];
 $redis_host = array_key_exists(8, $argv) ? $argv[8] : null;
 $redis_port = array_key_exists(9, $argv) ? $argv[9] : null;
 
-require_once($root . 'includes/classes/ImageOptimizer.php');
+require_once($root . 'vendor/dreadkopp/HTML_OutputOptimizer/ImageOptimizer.php');
 require_once($root . 'vendor/autoload.php');
 
 if (!$redis_host) {
@@ -38,4 +33,4 @@ $cache = new Predis\Client(
 );
 
 
-new \includes\classes\ImageOptimizer($source, $path, $name, $cache, $cachetime, $root);
+new vendor\dreadkopp\HTML_OutputOptimizer\ImageOptimizer($source, $path, $name, $cache, $cachetime, $root);

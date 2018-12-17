@@ -1,7 +1,13 @@
 <?php
 
+
+namespace vendor\dreadkopp\HTML_OutputOptimizer;
+
+
 class OutputOptimizer
 {
+
+
 
     private $cache = null;
     private $redis_pass = null;
@@ -175,7 +181,7 @@ class OutputOptimizer
 
 
             //2. find all inline js and collect
-            $dom = new DOMDocument();
+            $dom = new \DOMDocument();
             @$dom->loadHTML($buffer);
             $script = $dom->getElementsByTagName('script');
             foreach ($script as $js){
@@ -214,8 +220,10 @@ class OutputOptimizer
         //minify buffer
         $buffer = preg_replace($search, $replace, $buffer);
 
-        // remove comments ... not yet since there are still some 'commented' JS snippets around
-         $buffer = preg_replace('/<!--(.*)-->/Uis', '', $buffer);
+        // remove comments ...
+        $buffer = preg_replace('/<!--(.*)-->/Uis', '', $buffer);
+
+        $buffer .= '<style>.initialloader{display:none}</style>';
 
         return $buffer;
     }
@@ -283,9 +291,9 @@ class OutputOptimizer
         } else {
             $cmd = 'php ' . $this->root_dir . 'includes/classes/ImageOptimizer_helper.php ' . $source[1] . ' ' . $path . ' ' . $cachedAndOptimizedName . ' ' . $this->root_dir . ' ' . $redis_pass . ' ' . $redis_db . ' ' . self::CACHETIME . ' ' . $this->redis_host. ' ' . $this->redis_port;
           //  for DBG
-          //  require_once ($this->root_dir . 'includes/classes/ImageOptimizer.php');
-          //  new \includes\classes\ImageOptimizer($source[1], $path, $cachedAndOptimizedName, $this->cache, self::CACHETIME, $this->root_dir);
-            $this->executeAsyncShellCommand($cmd);
+            require_once ($this->root_dir . 'vendor/dreadkopp/HTML_OutputOptimizer/ImageOptimizer.php');
+            new ImageOptimizer($source[1], $path, $cachedAndOptimizedName, $this->cache, self::CACHETIME, $this->root_dir);
+          //  $this->executeAsyncShellCommand($cmd);
         }
 
         return $returnstring;
