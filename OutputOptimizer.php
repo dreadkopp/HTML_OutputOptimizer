@@ -222,9 +222,7 @@ class OutputOptimizer
 
         // remove comments ...
         $buffer = preg_replace('/<!--(.*)-->/Uis', '', $buffer);
-
-        $buffer .= '<style>.initialloader{display:none}</style>';
-
+        
         return $buffer;
     }
 
