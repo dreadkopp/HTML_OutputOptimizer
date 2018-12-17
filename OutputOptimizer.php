@@ -289,11 +289,11 @@ class OutputOptimizer
             }
 
         } else {
-            $cmd = 'php ' . $this->root_dir . 'includes/classes/ImageOptimizer_helper.php ' . $source[1] . ' ' . $path . ' ' . $cachedAndOptimizedName . ' ' . $this->root_dir . ' ' . $redis_pass . ' ' . $redis_db . ' ' . self::CACHETIME . ' ' . $this->redis_host. ' ' . $this->redis_port;
-          //  for DBG
-            require_once ($this->root_dir . 'vendor/dreadkopp/HTML_OutputOptimizer/ImageOptimizer.php');
-            new ImageOptimizer($source[1], $path, $cachedAndOptimizedName, $this->cache, self::CACHETIME, $this->root_dir);
-          //  $this->executeAsyncShellCommand($cmd);
+            $cmd = 'php ' . $this->root_dir . 'vendor/dreadkopp/HTML_OutputOptimizer/ImageOptimizer_helper.php ' . $source[1] . ' ' . $path . ' ' . $cachedAndOptimizedName . ' ' . $this->root_dir . ' ' . $redis_pass . ' ' . $redis_db . ' ' . self::CACHETIME . ' ' . $this->redis_host. ' ' . $this->redis_port;
+            //  for DBG
+            //require_once ($this->root_dir . 'vendor/dreadkopp/HTML_OutputOptimizer/ImageOptimizer.php');
+            //new ImageOptimizer($source[1], $path, $cachedAndOptimizedName, $this->cache, self::CACHETIME, $this->root_dir);
+            $this->executeAsyncShellCommand($cmd);
         }
 
         return $returnstring;

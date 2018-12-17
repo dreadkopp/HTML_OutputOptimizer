@@ -40,9 +40,6 @@ class ImageOptimizer
             $this->cache->expire($cachekey, $cachetime);
             $this->handleImage($cachepath,1024,true);
 
-            $factory = new OptimizerFactory();
-            $optimizer = $factory->get();
-            $optimizer->optimize($cachepath);
         }
     }
 
@@ -61,6 +58,7 @@ class ImageOptimizer
         try {
             $image = new \Imagick($path);
             if ($image->getImageWidth() > $width ) {
+                //that should really be enough, however make it configurable as well in the future
                 $image->resizeImage($width,1920,\Imagick::FILTER_LANCZOS,1,true);
             }
             if ($save) {
