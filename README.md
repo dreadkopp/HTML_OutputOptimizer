@@ -38,7 +38,7 @@ Usage:
 echo '<!DOCTYPE html>' . PHP_EOL;
 
 
-//create a RedisCache Client
+//create a RedisCache Client (or use a existing one)
 $cache = new Predis\Client(
     [
         'scheme'   => 'tcp',
@@ -51,7 +51,7 @@ $cache = new Predis\Client(
 
 //create a Instance of the Optimizer
 
-$optimizer = new OutputOptimizer($cache, <root_dir>, <cache_dir>, <redis_pass>, <redis_db>, <redis_host>, <redis_port>);
+$optimizer = new OutputOptimizer($cache, <root_dir>, <cache_dir>);
 //optimal add local JS files
 $optimizer->addLocalJSPath(<path_to_local_js_file>);
 
