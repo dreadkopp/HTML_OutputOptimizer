@@ -96,13 +96,14 @@ class OutputOptimizer
      * OutputOptimizer constructor.
      * @param Predis\Client $cache
      */
-    public function __construct(\Predis\Client $cache, $root_dir, $cache_dir, $redis_pass , $redis_db, $redis_host = '', $redis_port = '')
+    public function __construct(\Predis\Client $cache, $root_dir, $cache_dir )
     {
         $this->cache = $cache;
-        $this->redis_pass = $redis_pass;
-        $this->redis_db = $redis_db;
-        $this->redis_host = $redis_host;
-        $this->redis_port = $redis_port;
+        $redis_params = $cache->getConnection()->getParameters()->toArray();
+        $this->redis_pass = $redis_params['password'];
+        $this->redis_db = $redis_params['database'];
+        $this->redis_host = redis_params['host'];
+        $this->redis_port = $redis_params['port'];
         $this->root_dir =  $root_dir;
         $this->cache_dir = $cache_dir;
     }
