@@ -228,12 +228,6 @@ class OutputOptimizer
         return $buffer;
     }
 
-    private function minifiyAndCacheJS($source){
-        $js = $source[1];
-        $js = preg_replace('/<!--(.*)-->/Uis', '$1', $js);
-        $this->combined_js .= $source[1] . ';';
-    }
-
     private function cacheExternalJS($source) {
 
         $src = explode('"', $source[1]);
@@ -316,7 +310,7 @@ class OutputOptimizer
         if(!$comando){
             throw new Exception("No command given");
         }
-        shell_exec("/usr/bin/nohup ".$comando." >/dev/null 2>&1 &");
+        exec("/usr/bin/nohup ".$comando." > /dev/null 2>&1 &");
     }
 
 
