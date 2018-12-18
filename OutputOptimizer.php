@@ -102,7 +102,7 @@ class OutputOptimizer
         $redis_params = $cache->getConnection()->getParameters()->toArray();
         $this->redis_pass = $redis_params['password'];
         $this->redis_db = $redis_params['database'];
-        $this->redis_host = redis_params['host'];
+        $this->redis_host = $redis_params['host'];
         $this->redis_port = $redis_params['port'];
         $this->root_dir =  $root_dir;
         $this->cache_dir = $cache_dir;
