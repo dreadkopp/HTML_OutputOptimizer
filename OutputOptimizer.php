@@ -294,7 +294,7 @@ class OutputOptimizer
             //  for DBG
             //require_once ($this->root_dir . 'vendor/dreadkopp/HTML_OutputOptimizer/ImageOptimizer.php');
             //new ImageOptimizer($source[1], $path, $cachedAndOptimizedName, $this->cache, self::CACHETIME, $this->root_dir);
-            $this->executeAsyncShellCommand($cmd);
+            @$this->executeAsyncShellCommand($cmd);
         }
 
         return $returnstring;
