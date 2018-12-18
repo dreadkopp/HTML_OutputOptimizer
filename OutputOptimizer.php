@@ -166,6 +166,10 @@ class OutputOptimizer
             $buffer =  $buffer . '<script async src="'. $relative_path . '"></script>';
 
         } else {
+            
+            if  (file_exists($path) {
+                unlink($path);
+            }
 
 
             //1. find js sources and collect
@@ -287,6 +291,12 @@ class OutputOptimizer
             }
 
         } else {
+            
+            if (file_exists($path)){
+                unlink($path);
+                unlink($path. '.webp');
+            }
+            
             $cmd = 'php ' . $this->root_dir . 'vendor/dreadkopp/HTML_OutputOptimizer/ImageOptimizer_helper.php ' . $source[1] . ' ' . $path . ' ' . $cachedAndOptimizedName . ' ' . $this->root_dir . ' ' . $redis_pass . ' ' . $redis_db . ' ' . self::CACHETIME . ' ' . $this->redis_host. ' ' . $this->redis_port;
             //  for DBG
             //require_once ($this->root_dir . 'vendor/dreadkopp/HTML_OutputOptimizer/ImageOptimizer.php');
