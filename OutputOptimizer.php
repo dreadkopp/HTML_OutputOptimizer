@@ -167,7 +167,7 @@ class OutputOptimizer
 
         } else {
             
-            if  (file_exists($path) {
+            if  (file_exists($path)) {
                 unlink($path);
             }
 
