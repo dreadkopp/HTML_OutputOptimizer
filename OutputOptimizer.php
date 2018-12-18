@@ -172,19 +172,27 @@ class OutputOptimizer
             }
 
 
-            //1. find js sources and collect
+             //1. add local js
+            if (self::ADD_LOCAL_JS) {
+                foreach ($this->localjs as $local_js_path) {
+                    $minified_js = file_get_contents($local_js_path);
+                    $this->combined_js = $this->combined_js . $minified_js;
+                }
+            }
+
+            //2. find js sources and collect
             $searchinlineJS = '/<script\\b[^>]* src\s*=\s*"(.+?)">*<\\/script>/';
             $buffer = preg_replace_callback($searchinlineJS, function($matches){
                 return $this->cacheExternalJS($matches, $this->redis_pass, $this->redis_db);
             }, $buffer);
 
 
-            //add lazyload js .... needs jquery being imported in externals before ...
+            //3. add lazyload js .... needs jquery being imported in externals or locals before ...
             //TODO: add logic to check if jquery is present, else import
             $this->combined_js .= self::LAZYLOADJS;
 
 
-            //2. find all inline js and collect
+            //4. find all inline js and collect
             $dom = new \DOMDocument();
             @$dom->loadHTML($buffer);
             $script = $dom->getElementsByTagName('script');
@@ -192,16 +200,6 @@ class OutputOptimizer
                 $js = $js->nodeValue;
                 $js = preg_replace('/<!--(.*)-->/Uis', '$1', $js);
                 $this->combined_js .= $js ;
-            }
-
-
-
-            //add local js
-            if (self::ADD_LOCAL_JS) {
-                foreach ($this->localjs as $local_js_path) {
-                    $minified_js = file_get_contents($local_js_path);
-                    $this->combined_js = $this->combined_js . $minified_js;
-                }
             }
 
             //remove old script apperances
