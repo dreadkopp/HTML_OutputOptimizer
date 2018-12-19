@@ -176,8 +176,8 @@ class OutputOptimizer
 
             //put all the JS on bottom
             $relative_path = str_replace($this->root_dir , '', $path);
+            $buffer .=  '<script src="'. $relative_path . '"></script>';
             $buffer .= '<script>' . $this->inline_js .'</script>';
-            $buffer .=  '<script async src="'. $relative_path . '"></script>';
 
         } else {
             
@@ -230,8 +230,8 @@ class OutputOptimizer
 
             //put all the JS on bottom
             $relative_path = str_replace($this->root_dir , '', $path);
+            $buffer .=  '<script src="'. $relative_path . '"></script>';
             $buffer .= '<script>' .$this->inline_js .'</script>';
-            $buffer .=  '<script async src="'. $relative_path . '"></script>';
         }
 
         //minify buffer
