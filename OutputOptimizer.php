@@ -157,10 +157,7 @@ class OutputOptimizer
 
         //if we have a saved version, use that one
         if (file_exists($path) && (time()-filemtime($path) < self::CACHETIME - 10)) {
-
-            //get internal and external js
-            $js = file_get_contents($path);
-
+            
             //gather inline js
             $dom = new \DOMDocument();
             @$dom->loadHTML($buffer);
