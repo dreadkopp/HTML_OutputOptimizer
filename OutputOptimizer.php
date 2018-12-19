@@ -168,7 +168,7 @@ class OutputOptimizer
             foreach ($script as $js){
                 $js = $js->nodeValue;
                 $js = preg_replace('/<!--(.*)-->/Uis', '$1', $js);
-                $this->inlinejs .= $js ;
+                $this->inline_js .= $js ;
             }
 
             //remove old script apperances
@@ -176,7 +176,7 @@ class OutputOptimizer
 
             //put all the JS on bottom
             $relative_path = str_replace($this->root_dir , '', $path);
-            $buffer .= '<script>' .$this->inline_js .'</script>';
+            $buffer .= '<script>' . $this->inline_js .'</script>';
             $buffer .=  '<script async src="'. $relative_path . '"></script>';
 
         } else {
@@ -213,7 +213,7 @@ class OutputOptimizer
             foreach ($script as $js){
                 $js = $js->nodeValue;
                 $js = preg_replace('/<!--(.*)-->/Uis', '$1', $js);
-                $this->inlinejs .= $js ;
+                $this->inline_js .= $js ;
             }
 
             //remove old script apperances
