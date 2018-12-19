@@ -13,6 +13,7 @@ class OutputOptimizer
     private $redis_pass = null;
     private $redis_db = null;
     private $combined_js = '';
+    private $inline_js = '';
     private $localjs = [];
     private $root_dir = '';
     private $cache_dir = '';
@@ -157,14 +158,26 @@ class OutputOptimizer
         //if we have a saved version, use that one
         if (file_exists($path) && (time()-filemtime($path) < self::CACHETIME - 10)) {
 
+            //get internal and external js
             $js = file_get_contents($path);
+
+            //gather inline js
+            $dom = new \DOMDocument();
+            @$dom->loadHTML($buffer);
+            $script = $dom->getElementsByTagName('script');
+            foreach ($script as $js){
+                $js = $js->nodeValue;
+                $js = preg_replace('/<!--(.*)-->/Uis', '$1', $js);
+                $this->inlinejs .= $js ;
+            }
 
             //remove old script apperances
             $buffer = preg_replace( '#<script(.*?)>(.*?)</script>#is','',$buffer);
 
             //put all the JS on bottom
             $relative_path = str_replace($this->root_dir , '', $path);
-            $buffer =  $buffer . '<script async src="'. $relative_path . '"></script>';
+            $buffer .= '<script>' .$this->inline_js .'</script>';
+            $buffer .=  '<script async src="'. $relative_path . '"></script>';
 
         } else {
             
@@ -200,7 +213,7 @@ class OutputOptimizer
             foreach ($script as $js){
                 $js = $js->nodeValue;
                 $js = preg_replace('/<!--(.*)-->/Uis', '$1', $js);
-                $this->combined_js .= $js ;
+                $this->inlinejs .= $js ;
             }
 
             //remove old script apperances
@@ -217,7 +230,8 @@ class OutputOptimizer
 
             //put all the JS on bottom
             $relative_path = str_replace($this->root_dir , '', $path);
-            $buffer =  $buffer . '<script async src="'. $relative_path . '"></script>';
+            $buffer .= '<script>' .$this->inline_js .'</script>';
+            $buffer .=  '<script async src="'. $relative_path . '"></script>';
         }
 
         //minify buffer
