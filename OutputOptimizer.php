@@ -192,11 +192,19 @@ class OutputOptimizer
             }
 
             //2. find js sources and collect
-            $searchinlineJS = '/<script\\b[^>]* src\s*=\s*"(.+?)">*<\\/script>/';
-            $buffer = preg_replace_callback($searchinlineJS, function($matches){
-                return $this->cacheExternalJS($matches, $this->redis_pass, $this->redis_db);
-            }, $buffer);
-
+            $dom = new \DOMDocument();
+            @$dom->loadHTML($buffer);
+            $script = $dom->getElementsByTagName('script');
+            foreach ($script as $js){
+                $src = $js->getAttribute('src');
+                $ch = curl_init($src);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+                $raw = curl_exec($ch);
+                curl_close($ch);
+                $this->combined_js .= $raw . ';';
+            }
 
             //3. add lazyload js .... needs jquery being imported in externals or locals before ...
             //TODO: add logic to check if jquery is present, else import
@@ -239,21 +247,7 @@ class OutputOptimizer
         
         return $buffer;
     }
-
-    private function cacheExternalJS($source) {
-
-        $src = explode('"', $source[1]);
-        $src = $src[0];
-
-        $ch = curl_init($src);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-        $raw = curl_exec($ch);
-        curl_close($ch);
-        $this->combined_js .= $raw . ';';
-
-    }
+    
 
     /**
      * MOVE EACH IMAGE WE FIND IN THE HTML IN A CACHE FOLDER AND OPTIMIZE IF POSSIBLE
