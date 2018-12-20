@@ -247,7 +247,7 @@ class OutputOptimizer
         
         return $buffer;
     }
-    
+
 
     /**
      * MOVE EACH IMAGE WE FIND IN THE HTML IN A CACHE FOLDER AND OPTIMIZE IF POSSIBLE
@@ -277,7 +277,7 @@ class OutputOptimizer
         //if cached file exists and is not older than expire time, else create/update image in cache and update b64
         if (file_exists($path) && (time()-filemtime($path) < self::CACHETIME - 10)) {
 
-            if( strpos( $_SERVER['HTTP_ACCEPT'], 'image/webp' ) !== false ) {
+            if( strpos( $_SERVER['HTTP_ACCEPT'], 'image/webp' ) !== false && file_exists($path . '.webp')) {
                 $cachedAndOptimizedName = $cachedAndOptimizedName . '.webp';
             }
 
