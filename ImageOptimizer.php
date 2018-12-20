@@ -57,6 +57,8 @@ class ImageOptimizer
 
         try {
             $image = new \Imagick($path);
+            $image->optimizeImageLayers();
+            $image->setImageCompressionQuality(85);
             if ($image->getImageWidth() > $width ) {
                 //that should really be enough, however make it configurable as well in the future
                 $image->resizeImage($width,1920,\Imagick::FILTER_LANCZOS,1,true);
