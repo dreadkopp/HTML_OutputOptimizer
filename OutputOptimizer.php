@@ -19,6 +19,7 @@ class OutputOptimizer
     private $cache_dir = '';
     private $redis_host = '';
     private $redis_port = '';
+    private $extra = '';
 
     const USE_B64_ENCODED_IMAGES = true;
     const CACHETIME = 3600;
@@ -91,7 +92,13 @@ class OutputOptimizer
         }
     };';
 
-
+    /**
+     * Add extra strings to add to bottom of output
+     * @param $extra
+     */
+    public function setExtra($extra) {
+        $this->extra = $extra;
+    }
 
     /**
      * OutputOptimizer constructor.
@@ -244,6 +251,9 @@ class OutputOptimizer
 
         // remove comments ...
         $buffer = preg_replace('/<!--(.*)-->/Uis', '', $buffer);
+
+        //add extra
+        $buffer .= $this->extra;
         
         return $buffer;
     }
