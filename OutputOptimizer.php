@@ -28,7 +28,36 @@ class OutputOptimizer
 
 
     const LAZYLOADJS = ' //Lazy loading, refine to check / show per element
-    $(window).on("resize scroll load", function () {
+    function throttle(fn, threshhold, scope) {
+      threshhold || (threshhold = 250);
+      var last,
+          deferTimer;
+      return function () {
+        var context = scope || this;
+    
+        var now = +new Date,
+            args = arguments;
+        if (last && now < last + threshhold) {
+          // hold on to it
+          clearTimeout(deferTimer);
+          deferTimer = setTimeout(function () {
+            last = now;
+            fn.apply(context, args);
+          }, threshhold);
+        } else {
+          last = now;
+          fn.apply(context, args);
+        }
+      };
+    }
+    
+    
+    $(window).on("resize scroll load", throttle(function () {
+        checkForLazyLoad();
+    },100));
+
+
+    function checkForLazyLoad(){
         var images = $("img[data-src]").not(\'.owl-lazy\');
         if (images) {
             images.each(function (el, img) {
@@ -51,10 +80,7 @@ class OutputOptimizer
                 }
             });
         }
-    });
-
-    //Lazy loading iframes (google maps mostly), refine to check / show per element
-    $(window).on("resize scroll load", function () {
+        
         var iframes = $("iframe[data-src]");
         if (iframes) {
             iframes.each(function (el, iframe) {
@@ -66,7 +92,7 @@ class OutputOptimizer
                 }
             });
         }
-    });
+     };
 
     $.fn.isInViewport = function () {
         if (typeof $(this).offset() !== "undefined") {
