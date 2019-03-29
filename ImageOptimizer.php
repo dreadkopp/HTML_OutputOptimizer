@@ -38,7 +38,8 @@ class ImageOptimizer
             $base64 = 'data:image/' . $type . ';base64,' . base64_encode($small_image_data);
             $this->cache->set($cachekey, $base64);
             $this->cache->expire($cachekey, $cachetime);
-            $this->handleImage($cachepath,1024,true);
+            //1140 is default width of biggest bootstrap container... sound like a reasonable max widht
+            $this->handleImage($cachepath,1140,true);
 
         }
     }
