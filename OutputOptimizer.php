@@ -155,11 +155,13 @@ class OutputOptimizer
     public function sanitize_output($buffer)
     {
         //TODO: replace all <img .... src=" .... " ... /> with <img .... data-src=" .... " ... />
+        //TODO: replace all <img .... src=" .... " ... /> with <img .... data-src=" .... " ... />
         $search = array(
             '/\>[^\S ]+/s',  // strip whitespaces after tags, except space
             '/[^\S ]+\</s',  // strip whitespaces before tags, except space
             '/(\s)+/s',       // shorten multiple whitespace sequences
             '/<!DOCTYPE html>/', //initial DOCTYPE which would be minified as well... no worries, we add it later
+            '/no_optimization_script/',
 
         );
         $replace = array(
@@ -167,6 +169,7 @@ class OutputOptimizer
             '<',
             '\\1',
             '',
+            'script',
 
         );
 
