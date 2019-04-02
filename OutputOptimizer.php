@@ -21,7 +21,7 @@ class OutputOptimizer
     private $redis_port = '';
     private $extra = '';
 
-    const USE_B64_ENCODED_IMAGES = true;
+    const USE_B64_ENCODED_IMAGES = false;
     const CACHETIME = 3600;
     const ADD_LOCAL_JS = true;
 
@@ -154,7 +154,7 @@ class OutputOptimizer
      */
     public function sanitize_output($buffer)
     {
-        //TODO: replace all <img .... src=" .... " ... /> with <img .... data-src=" .... " ... />
+        $time_start = microtime(true);
         //TODO: replace all <img .... src=" .... " ... /> with <img .... data-src=" .... " ... />
         $search = array(
             '/\>[^\S ]+/s',  // strip whitespaces after tags, except space
@@ -283,7 +283,13 @@ class OutputOptimizer
 
         //add extra
         $buffer .= $this->extra;
-        
+
+
+        $time_end = microtime(true);
+        $execution_time = ($time_end - $time_start);
+
+        $buffer .= '<!--optimized by HTMLOutputOptimizer. Optimizing process took: ' . $execution_time . ' seconds -->';
+
         return $buffer;
     }
 
@@ -320,8 +326,8 @@ class OutputOptimizer
                 $cachedAndOptimizedName = $cachedAndOptimizedName . '.webp';
             }
 
-            $base64data = $this->getBase64Image($cachedAndOptimizedName);
             if (self::USE_B64_ENCODED_IMAGES) {
+                $base64data = $this->getBase64Image($cachedAndOptimizedName);
                 $returnstring = ' src="' . $base64data . '"' .' data-src="' . $this->cache_dir . $cachedAndOptimizedName . '"';
             } else {
                 $returnstring = ' data-src="' . $this->cache_dir . $cachedAndOptimizedName . '"';
