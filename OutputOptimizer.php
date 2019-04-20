@@ -374,7 +374,7 @@ class OutputOptimizer
      */
     private function getBase64Image($cachedFileName) {
 
-            $cachekey = str_replace(".","",$cachedFileName);
+            $cachekey = 'B64IMAGE:'.str_replace(".","",$cachedFileName);
             /** @var $this->>cache Predis\Client */
             $cacheddata = $this->cache->get($cachekey);
             if ($cacheddata) {
