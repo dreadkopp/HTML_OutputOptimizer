@@ -66,12 +66,12 @@ class ImageOptimizer
             }
             if ($save) {
                 $image->writeImage($path);
-                $webp_cmd = '/usr/bin/cwebp ' . $path . ' -o ' . $path . '.webp';
+                $path_wo_filetype = preg_replace("/\.[^.]+$/", "", $path);
+                $webp_cmd = '/usr/bin/cwebp ' . $path . ' -o ' . $path_wo_filetype . '.webp';
                 exec($webp_cmd);
             } else {
                 return $image->getImageBlob();
             }
-
         } catch (\Exception $e) {
             //well... some images are just broken....
         }

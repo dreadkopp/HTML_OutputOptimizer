@@ -328,8 +328,8 @@ class OutputOptimizer
         //if cached file exists and is not older than expire time, else create/update image in cache and update b64
         if (file_exists($path) && (time()-filemtime($path) < self::CACHETIME - 10)) {
 
-            if( strpos( $_SERVER['HTTP_ACCEPT'], 'image/webp' ) !== false && file_exists($path . '.webp')) {
-                $cachedAndOptimizedName = $cachedAndOptimizedName . '.webp';
+            if( strpos( $_SERVER['HTTP_ACCEPT'], 'image/webp' ) !== false && file_exists($cachepath.$filename . '.webp')) {
+                $cachedAndOptimizedName = $filename . '.webp';
             }
 
             if (self::USE_B64_ENCODED_IMAGES) {
@@ -342,8 +342,8 @@ class OutputOptimizer
         } else {
             
             if (file_exists($path)){
-                unlink($path);
-                unlink($path. '.webp');
+                @unlink($path);
+                @unlink($cachepath.$filename. '.webp');
             }
             
             $cmd = 'php ' . __DIR__ . '/ImageOptimizer_helper.php "' . $source[1] . '" "' . $path . '" "' . $cachedAndOptimizedName . '" "' . $this->root_dir . '" "' . $redis_pass . '" "' . $redis_db . '" "' . self::CACHETIME . '" "' . $this->redis_host. '" "' . $this->redis_port . '"';
