@@ -17,11 +17,12 @@ class OutputOptimizer
     private $localjs = [];
     private $root_dir = '';
     private $cache_dir = '';
+    private $public_cache_dir = '';
     private $redis_host = '';
     private $redis_port = '';
     private $extra = '';
 
-    const USE_B64_ENCODED_IMAGES = false;
+    const USE_B64_ENCODED_IMAGES = true;
     const CACHETIME = 3600;
     const ADD_LOCAL_JS = true;
 
@@ -126,11 +127,15 @@ class OutputOptimizer
         $this->extra = $extra;
     }
 
+
     /**
      * OutputOptimizer constructor.
-     * @param Predis\Client $cache
+     * @param \Predis\Client $cache
+     * @param $root_dir
+     * @param $cache_dir
+     * @param string $public_cache_dir
      */
-    public function __construct(\Predis\Client $cache, $root_dir, $cache_dir )
+    public function __construct(\Predis\Client $cache, $root_dir, $cache_dir, $public_cache_dir = '' )
     {
         $this->cache = $cache;
         $redis_params = $cache->getConnection()->getParameters()->toArray();
@@ -140,6 +145,7 @@ class OutputOptimizer
         $this->redis_port = $redis_params['port'];
         $this->root_dir =  $root_dir;
         $this->cache_dir = $cache_dir;
+        $this->public_cache_dir = $public_cache_dir?:$cache_dir;
     }
 
     public function addLocalJSPath ($path) {
@@ -328,9 +334,9 @@ class OutputOptimizer
 
             if (self::USE_B64_ENCODED_IMAGES) {
                 $base64data = $this->getBase64Image($cachedAndOptimizedName);
-                $returnstring = ' src="' . $base64data . '"' .' data-src="' . $this->cache_dir . $cachedAndOptimizedName . '"';
+                $returnstring = ' src="' . $base64data . '"' .' data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
             } else {
-                $returnstring = ' data-src="' . $this->cache_dir . $cachedAndOptimizedName . '"';
+                $returnstring = ' data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
             }
 
         } else {
