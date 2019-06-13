@@ -214,7 +214,7 @@ class OutputOptimizer
             $buffer = preg_replace( '#<script(.*?)>(.*?)</script>#is','',$buffer);
 
             //put all the JS on bottom
-            $relative_path = str_replace($this->root_dir , '', $path);
+            $relative_path = $this->public_cache_dir . $cachedAndOptimizedName;
             $buffer .=  '<script src="'. $relative_path . '"></script>';
             $buffer .= '<script>' . $this->inline_js .'</script>';
 
@@ -276,7 +276,7 @@ class OutputOptimizer
 
 
             //put all the JS on bottom
-            $relative_path = str_replace($this->root_dir , '', $path);
+            $relative_path = $this->public_cache_dir . $cachedAndOptimizedName;
             $buffer .=  '<script src="'. $relative_path . '"></script>';
             $buffer .= '<script>' .$this->inline_js .'</script>';
         }
