@@ -8,13 +8,15 @@ class ImageOptimizer
 {
     private $cache = null;
     private $root_dir = '';
+    private $image_root_fs = '';
 
-    public function __construct($source, $cachepath, $cachedAndOptimizedName, $cache, $cachetime, $root_dir)
+    public function __construct($source, $cachepath, $cachedAndOptimizedName, $cache, $cachetime, $root_dir, $image_root_fs)
     {
 
 
         $this->cache = $cache;
         $this->root_dir = $root_dir;
+        $this->image_root_fs = $image_root_fs;
         $this->optimize($source, $cachepath, $cachedAndOptimizedName, $cachetime);
     }
 
@@ -93,7 +95,7 @@ class ImageOptimizer
         }
 
         if (!(strpos($url, 'http') !== false)) {
-            $url = $this->root_dir . rtrim($url, "/");
+            $url = $this->image_root_fs . rtrim($url, "/");
             $url = realpath($url);
             if ($url) {
                 return copy($url, $saveto);

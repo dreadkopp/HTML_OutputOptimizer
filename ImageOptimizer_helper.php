@@ -8,8 +8,10 @@ $root = $argv[4];
 $redis_pass = $argv[5];
 $redis_db = $argv[6];
 $cachetime = $argv[7];
-$redis_host = array_key_exists(8, $argv) ? $argv[8] : null;
-$redis_port = array_key_exists(9, $argv) ? $argv[9] : null;
+$image_root_fs = $argv[8];
+$redis_host = array_key_exists(9, $argv) ? $argv[9] : null;
+$redis_port = array_key_exists(10, $argv) ? $argv[10] : null;
+
 
 require_once($root . 'vendor/dreadkopp/HTML_OutputOptimizer/ImageOptimizer.php');
 require_once($root . 'vendor/autoload.php');
@@ -33,4 +35,4 @@ $cache = new Predis\Client(
 );
 
 
-new vendor\dreadkopp\HTML_OutputOptimizer\ImageOptimizer($source, $path, $name, $cache, $cachetime, $root);
+new vendor\dreadkopp\HTML_OutputOptimizer\ImageOptimizer($source, $path, $name, $cache, $cachetime, $root, $image_root_fs);

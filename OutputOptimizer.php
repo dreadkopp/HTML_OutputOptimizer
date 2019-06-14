@@ -16,6 +16,7 @@ class OutputOptimizer
     private $inline_js = '';
     private $localjs = [];
     private $root_dir = '';
+    private $image_root_fs = '';
     private $cache_dir = '';
     private $public_cache_dir = '';
     private $redis_host = '';
@@ -135,7 +136,7 @@ class OutputOptimizer
      * @param $cache_dir
      * @param string $public_cache_dir
      */
-    public function __construct(\Predis\Client $cache, $root_dir, $cache_dir, $public_cache_dir = '' )
+    public function __construct(\Predis\Client $cache, $root_dir, $cache_dir, $public_cache_dir = '', $image_root_fs = '' )
     {
         $this->cache = $cache;
         $redis_params = $cache->getConnection()->getParameters()->toArray();
@@ -146,6 +147,7 @@ class OutputOptimizer
         $this->root_dir =  $root_dir;
         $this->cache_dir = $cache_dir;
         $this->public_cache_dir = $public_cache_dir?:$cache_dir;
+        $this->image_root_fs = $image_root_fs?:$root_dir;
     }
 
     public function addLocalJSPath ($path) {
@@ -346,7 +348,7 @@ class OutputOptimizer
                 @unlink($cachepath.$filename. '.webp');
             }
             
-            $cmd = 'php ' . __DIR__ . '/ImageOptimizer_helper.php "' . $source[1] . '" "' . $path . '" "' . $cachedAndOptimizedName . '" "' . $this->root_dir . '" "' . $redis_pass . '" "' . $redis_db . '" "' . self::CACHETIME . '" "' . $this->redis_host. '" "' . $this->redis_port . '"';
+            $cmd = 'php ' . __DIR__ . '/ImageOptimizer_helper.php "' . $source[1] . '" "' . $path . '" "' . $cachedAndOptimizedName . '" "' . $this->root_dir . '" "' . $this->image_root_fs . '" "' . $redis_pass . '" "' . $redis_db . '" "' . self::CACHETIME . '" "' . $this->redis_host. '" "' . $this->redis_port . '"';
             //  for DBG
             //require_once ($this->root_dir . 'vendor/dreadkopp/HTML_OutputOptimizer/ImageOptimizer.php');
             //new ImageOptimizer($source[1], $path, $cachedAndOptimizedName, $this->cache, self::CACHETIME, $this->root_dir);
