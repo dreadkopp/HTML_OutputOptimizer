@@ -97,6 +97,10 @@ class ImageOptimizer
         if (!(strpos($url, 'http') !== false)) {
             $url = $this->image_root_fs . rtrim($url, "/");
             $url = realpath($url);
+            if (!file_exists($url)) {
+                $url = $this->root_dir . rtrim($url, "/");
+                $url = realpath($url);
+            }
             if ($url) {
                 return copy($url, $saveto);
             } else {
