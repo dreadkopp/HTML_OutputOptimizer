@@ -95,14 +95,14 @@ class ImageOptimizer
         }
 
         if (!(strpos($url, 'http') !== false)) {
-            $url = $this->image_root_fs . rtrim($url, "/");
-            $url = realpath($url);
-            if (!file_exists($url)) {
-                $url = $this->root_dir . rtrim($url, "/");
-                $url = realpath($url);
+            $baseurl = $this->image_root_fs . rtrim($url, "/");
+            $baseurl = realpath($baseurl);
+            if (!file_exists($baseurl)) {
+                $baseurl = $this->root_dir . rtrim($url, "/");
+                $baseurl = realpath($baseurl);
             }
-            if ($url) {
-                return copy($url, $saveto);
+            if ($baseurl) {
+                return copy($baseurl, $saveto);
             } else {
                 return false;
             }
