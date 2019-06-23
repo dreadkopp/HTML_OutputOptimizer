@@ -348,11 +348,29 @@ class OutputOptimizer
                 @unlink($cachepath.$filename. '.webp');
             }
             
-            $cmd = 'php ' . __DIR__ . '/ImageOptimizer_helper.php "' . $source[1] . '" "' . $path . '" "' . $cachedAndOptimizedName . '" "' . $this->root_dir . '" "' . $this->image_root_fs . '" "' . $redis_pass . '" "' . $redis_db . '" "' . self::CACHETIME . '" "' . $this->redis_host. '" "' . $this->redis_port . '"';
+            $cmd = 'php ' . __DIR__ . '/ImageOptimizer_helper.php "' .
+                $source[1] . '" "' .
+                $path . '" "' .
+                $cachedAndOptimizedName . '" "' .
+                $this->root_dir . '" "' .
+                $this->image_root_fs . '" "' .
+                $redis_pass . '" "' .
+                $redis_db . '" "' .
+                self::CACHETIME . '" "' .
+                $this->redis_host. '" "' .
+                $this->redis_port . '"';
             //  for DBG
-            //require_once ($this->root_dir . 'vendor/dreadkopp/HTML_OutputOptimizer/ImageOptimizer.php');
-            //new ImageOptimizer($source[1], $path, $cachedAndOptimizedName, $this->cache, self::CACHETIME, $this->root_dir);
-            @$this->executeAsyncShellCommand($cmd);
+            //die($cmd);
+            require_once ($this->root_dir . 'vendor/dreadkopp/HTML_OutputOptimizer/ImageOptimizer.php');
+            new ImageOptimizer(
+                $source[1],
+                $path,
+                $cachedAndOptimizedName,
+                $this->cache,
+                self::CACHETIME*24,
+                $this->root_dir,
+                $this->image_root_fs);
+             $this->executeAsyncShellCommand($cmd);
         }
 
         return $returnstring;
@@ -369,6 +387,7 @@ class OutputOptimizer
         if(!$comando){
             throw new Exception("No command given");
         }
+ //       exec($comando);
         @exec("/usr/bin/nohup ".$comando." > /dev/null 2>&1 &");
     }
 

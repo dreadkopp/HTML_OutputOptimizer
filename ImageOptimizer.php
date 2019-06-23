@@ -12,8 +12,6 @@ class ImageOptimizer
 
     public function __construct($source, $cachepath, $cachedAndOptimizedName, $cache, $cachetime, $root_dir, $image_root_fs)
     {
-
-
         $this->cache = $cache;
         $this->root_dir = $root_dir;
         $this->image_root_fs = $image_root_fs;
@@ -75,7 +73,7 @@ class ImageOptimizer
                 return $image->getImageBlob();
             }
         } catch (\Exception $e) {
-            //well... some images are just broken....
+            echo $e->getMessage();
         }
 
     }
@@ -102,6 +100,7 @@ class ImageOptimizer
                 $baseurl = realpath($baseurl);
             }
             if ($baseurl) {
+                echo "copy " . $baseurl . ' tot ' . '$saveto';
                 return copy($baseurl, $saveto);
             } else {
                 return false;
