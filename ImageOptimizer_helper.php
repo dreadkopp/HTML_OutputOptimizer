@@ -5,10 +5,10 @@ $source = $argv[1];
 $path = $argv[2];
 $name = $argv[3];
 $root = $argv[4];
-$redis_pass = $argv[5];
-$redis_db = $argv[6];
-$cachetime = $argv[7];
-$image_root_fs = $argv[8];
+$image_root_fs = $argv[5];
+$redis_pass = $argv[6];
+$redis_db = $argv[7];
+$cachetime = $argv[8];
 $redis_host = array_key_exists(9, $argv) ? $argv[9] : null;
 $redis_port = array_key_exists(10, $argv) ? $argv[10] : null;
 
