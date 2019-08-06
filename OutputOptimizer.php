@@ -16,6 +16,7 @@ class OutputOptimizer
     private $redis_db = null;
     private $combined_js = '';
     private $inline_js = '';
+    private $inline_style = '';
     private $localjs = [];
     private $root_dir = '';
     private $image_root_fs = '';
@@ -284,6 +285,23 @@ class OutputOptimizer
             $buffer .=  '<script src="'. $relative_path . '"></script>';
             $buffer .= '<script>' .$this->inline_js .'</script>';
         }
+
+        $dom = new \DOMDocument();
+        @$dom->loadHTML($buffer);
+        $style = $dom->getElementsByTagName('style');
+        foreach ($style as $s){
+            $s = $s->nodeValue;
+            $s = preg_replace('/<!--(.*)-->/Uis', '$1', $s);
+            $this->inline_style .= $s ;
+        }
+
+
+        //remove old style apperances
+        $buffer = preg_replace( '#<style(.*?)>(.*?)</style>#is','',$buffer);
+
+        //add inline css first
+        $buffer = '<style>' .$this->inline_style .'</style>' . $buffer;
+
 
         //minify buffer
         $buffer = preg_replace($search, $replace, $buffer);
