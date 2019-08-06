@@ -299,8 +299,11 @@ class OutputOptimizer
         //remove old style apperances
         $buffer = preg_replace( '#<style(.*?)>(.*?)</style>#is','',$buffer);
 
-        //add inline css first
-        $buffer = '<style>' .$this->inline_style .'</style>' . $buffer;
+
+
+        //insert inline css in head
+        $buffer_exloded = explode('<head>',$buffer,2);
+        $buffer = $buffer_exloded[0] . '<head><style>' .$this->inline_style .'</style>' . $buffer_exloded[1];
 
 
         //minify buffer
