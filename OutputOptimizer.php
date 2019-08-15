@@ -357,14 +357,11 @@ class OutputOptimizer
                 $cachedAndOptimizedName = $filename . '.webp';
             }
 
-            //imagesize
-            $sizes = getimagesize($this->public_cache_dir . $cachedAndOptimizedName);
-
             if (self::USE_B64_ENCODED_IMAGES) {
                 $base64data = $this->getBase64Image($cachedAndOptimizedName);
-                $returnstring = ' width="'.$sizes[0].'" height="'.$sizes[1].'" src="' . $base64data . '"' .' data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
+                $returnstring = ' src="' . $base64data . '"' .' data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
             } else {
-                $returnstring = ' width="'.$sizes[0].'" height="'.$sizes[1].'" data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
+                $returnstring = ' data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
             }
 
         } else {
