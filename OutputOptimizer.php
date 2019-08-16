@@ -63,7 +63,7 @@ class OutputOptimizer
 
 
     function checkForLazyLoad(){
-        var images = $("img[data-src]").not(\'.owl-lazy\');
+        var images = $("img[data-src]");
         if (images) {
             images.each(function (el, img) {
                 if ($(this).optimisticIsInViewport()) {
