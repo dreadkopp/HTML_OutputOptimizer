@@ -109,6 +109,7 @@ class OutputOptimizer
 
             return elementBottom > viewportTop && elementTop < viewportBottom;
         }
+        return false;
     };
 
     $.fn.optimisticIsInViewport = function () {
@@ -119,8 +120,9 @@ class OutputOptimizer
             var viewportTop = $(window).scrollTop();
             var viewportBottom = viewportTop + 2 * window.innerHeight;
 
-            return elementBottom > viewportTop && elementTop < viewportBottom;
+            return elementBottom >= viewportTop && elementTop < viewportBottom;
         }
+        return false;
     };';
 
     /**
