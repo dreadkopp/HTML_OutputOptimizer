@@ -312,11 +312,11 @@ class OutputOptimizer
         $buffer = $buffer_exloded[0] . '<head><style>' .$this->inline_style .'</style>' . $buffer_exloded[1];
 
 
-        //minify buffer
-        $buffer = preg_replace($search, $replace, $buffer);
-
         // remove comments ...
         $buffer = preg_replace('/<!--(.*)-->/Uis', '', $buffer);
+
+        //minify buffer
+        $buffer = preg_replace($search, $replace, $buffer);
 
         //add extra
         $buffer .= $this->extra;
