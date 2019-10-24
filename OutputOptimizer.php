@@ -25,8 +25,8 @@ class OutputOptimizer
     private $redis_host = '';
     private $redis_port = '';
     private $extra = '';
+    private $use_b64_images = true;
 
-    const USE_B64_ENCODED_IMAGES = true;
     const CACHETIME = 3600;
     const ADD_LOCAL_JS = true;
 
@@ -141,8 +141,9 @@ class OutputOptimizer
      * @param $cache_dir
      * @param string $public_cache_dir
      */
-    public function __construct(\Predis\Client $cache, $root_dir, $cache_dir, $public_cache_dir = '', $image_root_fs = '' )
+    public function __construct(\Predis\Client $cache, $root_dir, $cache_dir, $public_cache_dir = '', $image_root_fs = '',$use_b64 = true )
     {
+        $this->use_b64_images = $use_b64;
         $this->cache = $cache;
         $redis_params = $cache->getConnection()->getParameters()->toArray();
         $this->redis_pass = $redis_params['password'];
@@ -359,7 +360,7 @@ class OutputOptimizer
                 $cachedAndOptimizedName = $filename . '.webp';
             }
 
-            if (self::USE_B64_ENCODED_IMAGES) {
+            if ($this->use_b64_images) {
                 $base64data = $this->getBase64Image($cachedAndOptimizedName);
                 $returnstring = ' src="' . $base64data . '"' .' data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
             } else {
