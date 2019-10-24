@@ -26,7 +26,7 @@ class OutputOptimizer
     private $redis_port = '';
     private $extra = '';
     private $use_b64_images = true;
-    private $skip_x_b64_images = 0;
+    private $skip_x_lazy_images = 0;
     private $skip_counter = 0;
 
     const CACHETIME = 3600;
@@ -143,9 +143,9 @@ class OutputOptimizer
      * @param $cache_dir
      * @param string $public_cache_dir
      */
-    public function __construct(\Predis\Client $cache, $root_dir, $cache_dir, $public_cache_dir = '', $image_root_fs = '',$use_b64 = true, $skip_b64_images = 0 )
+    public function __construct(\Predis\Client $cache, $root_dir, $cache_dir, $public_cache_dir = '', $image_root_fs = '',$use_b64 = true, $skip_x_lazy_images = 0 )
     {
-        $this->skip_x_b64_images = $skip_b64_images;
+        $this->skip_x_lazy_images = $skip_x_lazy_images;
         $this->use_b64_images = $use_b64;
         $this->cache = $cache;
         $redis_params = $cache->getConnection()->getParameters()->toArray();
@@ -363,12 +363,22 @@ class OutputOptimizer
                 $cachedAndOptimizedName = $filename . '.webp';
             }
 
-            if ($this->use_b64_images && $this->skip_counter >= $this->skip_x_b64_images) {
-                $base64data = $this->getBase64Image($cachedAndOptimizedName);
-                $returnstring = ' src="' . $base64data . '"' .' data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
+            if ($this->use_b64_images) {
+                if ($this->skip_counter >= $this->skip_x_lazy_images) {
+                    $base64data = $this->getBase64Image($cachedAndOptimizedName);
+                    $returnstring = ' src="' . $base64data . '"' .' data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
+                } else {
+                    $this->skip_counter++;
+                    $returnstring = ' src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
+                }
             } else {
-                $this->skip_counter++;
-                $returnstring = ' data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
+                if ($this->skip_counter >= $this->skip_x_lazy_images) {
+                    $returnstring = ' data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
+                } else {
+                    $this->skip_counter++;
+                    $returnstring = ' src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
+
+                }
             }
 
         } else {
