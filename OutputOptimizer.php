@@ -382,6 +382,8 @@ class OutputOptimizer
             }
 
         } else {
+
+
             
             if (file_exists($path)){
                 @unlink($path);
@@ -407,6 +409,7 @@ class OutputOptimizer
             $process->run();*/
 
              $this->executeAsyncShellCommand($cmd);
+            $returnstring = 'src="' . $source[1] . '"';
         }
 
         return $returnstring;
