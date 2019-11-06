@@ -27,6 +27,8 @@ class ImageOptimizer
     private function optimize($source, $cachepath, $cachedAndOptimizedName, $cachetime)
     {
 
+        //if takes longer than this something has gone south badly
+        set_time_limit(10);
 
         if ($this->cache_image($source, $cachepath)) {
             //optimize
@@ -110,12 +112,17 @@ class ImageOptimizer
             curl_setopt($ch, CURLOPT_HEADER, 0);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
             $raw = curl_exec($ch);
 
             curl_close($ch);
 
 
             if (strpos($raw, '<!DOCTYPE HTML') !== false) {
+                return false;
+            }
+            if (!$raw) {
                 return false;
             }
 
