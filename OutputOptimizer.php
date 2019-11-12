@@ -309,7 +309,8 @@ class OutputOptimizer
 
         //insert inline css in head
         $buffer_exloded = explode('<head>',$buffer,2);
-        $buffer = $buffer_exloded[0] . '<head><style>' .$this->inline_style .'</style>' . $buffer_exloded[1]??'';
+        $buffer_exloded[1] = $buffer_exloded[1]??''; 
+        $buffer = $buffer_exloded[0] . '<head><style>' .$this->inline_style .'</style>' . $buffer_exloded[1];
 
 
         // remove comments ...
