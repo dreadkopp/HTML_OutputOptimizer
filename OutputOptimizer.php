@@ -28,6 +28,7 @@ class OutputOptimizer
     private $use_b64_images = true;
     private $skip_x_lazy_images = 0;
     private $skip_counter = 0;
+    private $js_version = '1';
 
     const CACHETIME = 3600;
     const ADD_LOCAL_JS = true;
@@ -135,6 +136,10 @@ class OutputOptimizer
         $this->extra = $extra;
     }
 
+    public function setJSVersion($tag) {
+        $this->js_version = $tag;
+    }
+
 
     /**
      * OutputOptimizer constructor.
@@ -225,7 +230,7 @@ class OutputOptimizer
             $buffer = preg_replace( '#<script(.*?)>(.*?)</script>#is','',$buffer);
 
             //put all the JS on bottom
-            $relative_path = $this->public_cache_dir . $cachedAndOptimizedName;
+            $relative_path = $this->public_cache_dir . $cachedAndOptimizedName . '?v='.$this->js_version;
             $buffer .=  '<script src="'. $relative_path . '"></script>';
             $buffer .= '<script>' . $this->inline_js .'</script>';
 
@@ -287,7 +292,7 @@ class OutputOptimizer
 
 
             //put all the JS on bottom
-            $relative_path = $this->public_cache_dir . $cachedAndOptimizedName;
+            $relative_path = $this->public_cache_dir . $cachedAndOptimizedName. '?v='.$this->js_version;
             $buffer .=  '<script src="'. $relative_path . '"></script>';
             $buffer .= '<script>' .$this->inline_js .'</script>';
         }
