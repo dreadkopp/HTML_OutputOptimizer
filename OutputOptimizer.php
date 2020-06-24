@@ -9,6 +9,11 @@ use Symfony\Component\Process\Process;
 class OutputOptimizer
 {
 
+    const MAX_CONVERSIONS=30;
+
+    private $limit_exceeded = false;
+    private $conversions = 0;
+
 
 
     private $cache = null;
@@ -345,6 +350,13 @@ class OutputOptimizer
      */
     private function optimizeAndCacheImages($source, $redis_pass, $redis_db)
     {
+        if ($this->limit_exceeded) {
+            $returnstring = 'src="' . $source[1] . '"';
+        }
+        $this->conversions++;
+        if ($this->conversions >= self::MAX_CONVERSIONS) {
+            $this->limit_exceeded = true;
+        }
 
         $returnstring = 'data-src="' . $source[1] . '"';
 
