@@ -179,7 +179,6 @@ class OutputOptimizer
     public function sanitize_output($buffer)
     {
         $time_start = microtime(true);
-        //TODO: replace all <img .... src=" .... " ... /> with <img .... data-src=" .... " ... />
         $search = array(
             '/\>[^\S ]+/s',  // strip whitespaces after tags, except space
             '/[^\S ]+\</s',  // strip whitespaces before tags, except space
@@ -348,7 +347,12 @@ class OutputOptimizer
     private function optimizeAndCacheImages($source, $redis_pass, $redis_db)
     {
         if ($this->limit_exceeded) {
-            return 'src="' . $source[1] . '"';
+          if ($this->skip_counter >= $this->skip_x_lazy_images) {
+              return 'data-src="' . $source[1] . '"';
+          } else {
+              $this->skip_counter++;
+              return 'src="'. $source[1] . '"';
+          }
         }
 
         $returnstring = 'data-src="' . $source[1] . '"';
