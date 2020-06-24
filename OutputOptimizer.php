@@ -9,13 +9,12 @@ use Symfony\Component\Process\Process;
 class OutputOptimizer
 {
 
-    const MAX_CONVERSIONS=30;
+    const MAX_CONVERSIONS=20;
+    const CACHETIME = 7200;
+    const ADD_LOCAL_JS = true;
 
     private $limit_exceeded = false;
     private $conversions = 0;
-
-
-
     private $cache = null;
     private $redis_pass = null;
     private $redis_db = null;
@@ -35,8 +34,6 @@ class OutputOptimizer
     private $skip_counter = 0;
     private $js_version = '1';
 
-    const CACHETIME = 3600;
-    const ADD_LOCAL_JS = true;
 
 
 
@@ -351,11 +348,7 @@ class OutputOptimizer
     private function optimizeAndCacheImages($source, $redis_pass, $redis_db)
     {
         if ($this->limit_exceeded) {
-            $returnstring = 'src="' . $source[1] . '"';
-        }
-        $this->conversions++;
-        if ($this->conversions >= self::MAX_CONVERSIONS) {
-            $this->limit_exceeded = true;
+            return 'src="' . $source[1] . '"';
         }
 
         $returnstring = 'data-src="' . $source[1] . '"';
@@ -402,6 +395,10 @@ class OutputOptimizer
         } else {
 
 
+            if ($this->conversions >= self::MAX_CONVERSIONS) {
+                $this->limit_exceeded = true;
+            }
+            $this->conversions++;
             
             if (file_exists($path)){
                 @unlink($path);
