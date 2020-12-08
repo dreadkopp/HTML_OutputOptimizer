@@ -31,7 +31,6 @@ class AsyncProcessStore
 			}
 			self::$_instance = new self($client);
 		}
-		
 		return self::$_instance;
 	}
 	
@@ -52,10 +51,14 @@ class AsyncProcessStore
 		foreach ($chunk[0] as $process) {
 			/** @var Process $process */
 			$key = md5(json_encode($process->getCommandLine()));
-			$process->run();
+			$process->start();
+			$this->running[] = $process;
 			unset($processes[$key]);
 		}
 		$this->client->set(self::$KEY,serialize($processes));
+		while ($this->stillRunning()) {
+			usleep(50000);
+		}
 	}
 	
 	public function startStack() {
