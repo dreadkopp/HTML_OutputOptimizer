@@ -4,6 +4,7 @@
 namespace vendor\dreadkopp\HTML_OutputOptimizer;
 
 use Symfony\Component\Process\Process;
+use vendor\dreadkopp\HTML_OutputOptimizer\src\Handler\HtmlMinify;
 use vendor\dreadkopp\HTML_OutputOptimizer\src\Handler\ImageOptimizer;
 
 
@@ -217,7 +218,7 @@ class OutputOptimizer
         $buffer = preg_replace('/<!--(.*)-->/Uis', '', $buffer);
 
         //minify buffer
-        $buffer = \HtmlMinify::minify($buffer);
+        $buffer = HtmlMinify::minify($buffer);
 
         //add extra
         $buffer .= $this->extra;
