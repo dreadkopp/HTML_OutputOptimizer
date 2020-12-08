@@ -72,7 +72,7 @@ ob_start(array($optimizer, 'sanitize_output'));
 for image optimization OutputOptimizer dispatches async jobs to re-render the images in background
 
 if you got a asynchronous worker for that (i.e via supervisord), you might want to extend the OutputOptimizer::dispatchAsyncJobs() to do nothing
-and have a worker instance that users AsyncProcessStore::startStack() or ArrayProcessStore::dispatchChunk()
+and have a worker instance that uses AsyncProcessStore::startStack() or ArrayProcessStore::dispatchChunk()
 
 
 # WHY?
