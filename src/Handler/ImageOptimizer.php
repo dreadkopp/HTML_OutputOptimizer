@@ -236,8 +236,8 @@ class ImageOptimizer
 				//new self($source[1], $path, $cachedAndOptimizedName, $cache, OutputOptimizer::CACHETIME, $root_dir, $image_root_fs);
 				   $process = new Process(
 						[
-							'php ',
-							__DIR__ . '/ImageOptimizer_helper.php',
+							'php',
+							__DIR__ . '/../ImageOptimizer_helper.php',
 							$source[1],
 							$path,
 							$cachedAndOptimizedName,

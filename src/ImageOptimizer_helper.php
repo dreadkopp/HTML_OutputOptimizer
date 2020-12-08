@@ -35,4 +35,12 @@ $cache = new Predis\Client(
 );
 
 
-new vendor\dreadkopp\HTML_OutputOptimizer\ImageOptimizer($source, $path, $name, $cache, $cachetime, $root, $image_root_fs);
+new vendor\dreadkopp\HTML_OutputOptimizer\ImageOptimizer(
+	$source,
+	$path,
+	$name,
+	$cache,
+	$cachetime,
+	$root,
+	$image_root_fs
+);
