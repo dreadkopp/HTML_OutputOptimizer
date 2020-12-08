@@ -37,7 +37,6 @@ class OutputOptimizer
     private $js_version = '1';
 
     const CACHETIME = 3600;
-    const ADD_LOCAL_JS = true;
     const LOAD_THRESHOLD_PERCENT = 60;
     
 

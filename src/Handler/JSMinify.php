@@ -5,6 +5,7 @@ namespace dreadkopp\HTML_OutputOptimizer\Handler;
 
 
 use dreadkopp\HTML_OutputOptimizer\Library\Lazyload;
+use dreadkopp\HTML_OutputOptimizer\OutputOptimizer;
 
 class JSMinify
 {
@@ -23,7 +24,7 @@ class JSMinify
 		$path = $cachepath . $cachedAndOptimizedName;
 		
 		//if we have a saved version, use that one
-		if (file_exists($path) && (time()-filemtime($path) < self::CACHETIME - 10)) {
+		if (file_exists($path) && (time()-filemtime($path) < OutputOptimizer::CACHETIME - 10)) {
 			
 			//gather inline js
 			$dom = new \DOMDocument();
@@ -51,7 +52,7 @@ class JSMinify
 			
 			
 			//1. add local js
-			if (self::ADD_LOCAL_JS) {
+			if (count($local_js)) {
 				foreach ($local_js as $local_js_path) {
 					$minified_js = file_get_contents($local_js_path);
 					$combined_js = $combined_js . $minified_js;
