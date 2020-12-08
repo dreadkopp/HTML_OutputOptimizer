@@ -24,6 +24,7 @@ class OutputOptimizer
     const USE_B64_ENCODED_IMAGES = false;
     const CACHETIME = 3600;
     const ADD_LOCAL_JS = true;
+    const LOAD_THRESHOLD_PERCENT = 60;
 
 
 

@@ -26,6 +26,12 @@ class ImageOptimizer
      */
     private function optimize($source, $cachepath, $cachedAndOptimizedName, $cachetime)
     {
+    	$count_cpu = shell_exec('cat /proc/cpuinfo | grep processor | wc -l');
+    	$current_load = sys_getloadavg()[0];
+    	$threshold_percent = OutputOptimizer::LOAD_THRESHOLD_PERCENT;
+    	if ($current_load/$count_cpu > $threshold_percent/100) {
+    		echo 'skipping due to high load';
+		}
 
 
         if ($this->cache_image($source, $cachepath)) {
