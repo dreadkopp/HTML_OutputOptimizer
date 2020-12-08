@@ -4,12 +4,14 @@
 namespace dreadkopp\HTML_OutputOptimizer\Handler;
 
 
+use DOMDocument;
 use dreadkopp\HTML_OutputOptimizer\Library\Lazyload;
 use dreadkopp\HTML_OutputOptimizer\OutputOptimizer;
 
 class JSMinify
 {
-	public static function minify($buffer, $root_dir, $cache_dir, $inline_js, $public_cache_dir, $js_version, $local_js) {
+	public static function minify($buffer, $root_dir, $cache_dir, $inline_js, $public_cache_dir, $js_version, $local_js)
+	{
 		
 		$combined_js = '';
 		//1. check if we already got a cached version
@@ -24,29 +26,29 @@ class JSMinify
 		$path = $cachepath . $cachedAndOptimizedName;
 		
 		//if we have a saved version, use that one
-		if (file_exists($path) && (time()-filemtime($path) < OutputOptimizer::CACHETIME - 10)) {
+		if (file_exists($path) && (time() - filemtime($path) < OutputOptimizer::CACHETIME - 10)) {
 			
 			//gather inline js
-			$dom = new \DOMDocument();
+			$dom = new DOMDocument();
 			@$dom->loadHTML($buffer);
 			$script = $dom->getElementsByTagName('script');
-			foreach ($script as $js){
+			foreach ($script as $js) {
 				$js = $js->nodeValue;
 				$js = preg_replace('/<!--(.*)-->/Uis', '$1', $js);
-				$inline_js .= $js ;
+				$inline_js .= $js;
 			}
 			
 			//remove old script apperances
-			$buffer = preg_replace( '#<script(.*?)>(.*?)</script>#is','',$buffer);
+			$buffer = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $buffer);
 			
 			//put all the JS on bottom
-			$relative_path = $public_cache_dir . $cachedAndOptimizedName . '?v='.$js_version;
-			$buffer .=  '<script src="'. $relative_path . '"></script>';
-			$buffer .= '<script>' . $inline_js .'</script>';
+			$relative_path = $public_cache_dir . $cachedAndOptimizedName . '?v=' . $js_version;
+			$buffer .= '<script src="' . $relative_path . '"></script>';
+			$buffer .= '<script>' . $inline_js . '</script>';
 			
 		} else {
 			
-			if  (file_exists($path)) {
+			if (file_exists($path)) {
 				unlink($path);
 			}
 			
@@ -60,37 +62,31 @@ class JSMinify
 			}
 			
 			//2. find js sources and collect
-			$dom = new \DOMDocument();
+			$dom = new DOMDocument();
 			@$dom->loadHTML($buffer);
 			$script = $dom->getElementsByTagName('script');
-			foreach ($script as $js){
+			foreach ($script as $js) {
 				$src = $js->getAttribute('src');
-				$ch = curl_init($src);
-				curl_setopt($ch, CURLOPT_HEADER, 0);
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-				curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-				$raw = curl_exec($ch);
-				curl_close($ch);
-				$combined_js .= $raw . ';';
+				if (!$src) {
+					$js = $js->nodeValue;
+					$js = preg_replace('/<!--(.*)-->/Uis', '$1', $js);
+					$inline_js .= $js;
+				} else {
+					$ch = curl_init($src);
+					curl_setopt($ch, CURLOPT_HEADER, 0);
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+					curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+					$raw = curl_exec($ch);
+					curl_close($ch);
+					$combined_js .= $raw . ';';
+				}
+
 			}
 			
 			//3. add lazyload js .... needs jquery being imported in externals or locals before ...
 			//TODO: add logic to check if jquery is present, else import
 			$combined_js .= Lazyload::LAZYLOADJS;
 			
-			
-			//4. find all inline js and collect
-			$dom = new \DOMDocument();
-			@$dom->loadHTML($buffer);
-			$script = $dom->getElementsByTagName('script');
-			foreach ($script as $js){
-				$js = $js->nodeValue;
-				$js = preg_replace('/<!--(.*)-->/Uis', '$1', $js);
-				$inline_js .= $js ;
-			}
-			
-			//remove old script apperances
-			$buffer = preg_replace( '#<script(.*?)>(.*?)</script>#is','',$buffer);
 			
 			if (file_exists($path)) {
 				unlink($path);
@@ -102,9 +98,9 @@ class JSMinify
 			
 			
 			//put all the JS on bottom
-			$relative_path = $public_cache_dir . $cachedAndOptimizedName. '?v='.$js_version;
-			$buffer .=  '<script src="'. $relative_path . '"></script>';
-			$buffer .= '<script>' .$inline_js .'</script>';
+			$relative_path = $public_cache_dir . $cachedAndOptimizedName . '?v=' . $js_version;
+			$buffer .= '<script src="' . $relative_path . '"></script>';
+			$buffer .= '<script>' . $inline_js . '</script>';
 		}
 		return $buffer;
 	}

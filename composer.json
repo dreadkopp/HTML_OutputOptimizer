@@ -13,6 +13,7 @@
     "php": "^7|^8",
     "ext-imagick" : "*",
     "ext-curl" : "*",
+    "ext-dom" : "*",
     "predis/predis": "^1.1",
     "symfony/process" : "*"
   },
