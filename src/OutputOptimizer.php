@@ -3,9 +3,9 @@
 
 namespace dreadkopp\HTML_OutputOptimizer;
 
+use dreadkopp\HTML_OutputOptimizer\Handler\HtmlMinify;
+use dreadkopp\HTML_OutputOptimizer\Handler\ImageOptimizer;
 use Symfony\Component\Process\Process;
-use dreadkopp\HTML_OutputOptimizer\src\Handler\HtmlMinify;
-use dreadkopp\HTML_OutputOptimizer\src\Handler\ImageOptimizer;
 
 
 class OutputOptimizer
