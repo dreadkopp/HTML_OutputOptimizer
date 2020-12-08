@@ -251,7 +251,7 @@ class ImageOptimizer
 						]
 				   );
 				   $process->start();
-				   $store = AsyncProcessStore::getInstance();
+				   $store = AsyncProcessStore::getInstance($cache);
 				   $store->addProcess($process);
 		
 			//self::executeAsyncShellCommand($cmd);
