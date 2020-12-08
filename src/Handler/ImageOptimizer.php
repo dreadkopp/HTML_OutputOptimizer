@@ -220,20 +220,8 @@ class ImageOptimizer
 				@unlink($path);
 				@unlink($cachepath.$filename. '.webp');
 			}
-			$cmd = 'php ' . __DIR__ . '/ImageOptimizer_helper.php "' .
-				$source[1] . '" "' .
-				$path . '" "' .
-				$cachedAndOptimizedName . '" "' .
-				$root_dir . '" "' .
-				$image_root_fs . '" "' .
-				$redis_pass . '" "' .
-				$redis_db . '" "' .
-				OutputOptimizer::CACHETIME . '" "' .
-				$redis_host. '" "' .
-				$redis_port . '"';
 		
 		
-				//new self($source[1], $path, $cachedAndOptimizedName, $cache, OutputOptimizer::CACHETIME, $root_dir, $image_root_fs);
 				   $process = new Process(
 						[
 							'php',
@@ -250,11 +238,9 @@ class ImageOptimizer
 							$redis_port,
 						]
 				   );
-				   $process->start();
 				   $store = AsyncProcessStore::getInstance($cache);
 				   $store->addProcess($process);
 		
-			//self::executeAsyncShellCommand($cmd);
 			$returnstring = 'src="' . $source[1] . '"';
 		}
 	
@@ -282,16 +268,5 @@ class ImageOptimizer
 		
 	}
 	
-	/**
-	 * Execute a command on host for asyncronity
-	 *
-	 * @param null $comando
-	 * @throws Exception
-	 */
-	private static function executeAsyncShellCommand($comando = null){
-		if(!$comando){
-			throw new \Exception("No command given");
-		}
-		@exec("/usr/bin/nohup ".$comando." > /dev/null 2>&1 &");
-	}
+	
 }

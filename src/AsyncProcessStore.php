@@ -14,6 +14,7 @@ class AsyncProcessStore
 	private static $_instance = null;
 	private $client;
 	private static $KEY = 'ASYNC_PROCESSES';
+	private $running = [];
 	
 	
 	public static function setCache(Client $client) {
@@ -24,7 +25,7 @@ class AsyncProcessStore
 	{
 		if (null === self::$_instance) {
 			if (null === $client) {
-				throw new ConnectionException('no redis cache given');
+				throw new \Exception('no redis cache given');
 			}
 			self::$_instance = new self($client);
 		}
@@ -36,26 +37,32 @@ class AsyncProcessStore
 		$this->client = $client;
 	}
 	
-	public function addProcess(Process $process) {
-		$processes = $this->client->get(self::$KEY)?? [];
-		$processes[] = $process;
-		$this->client->set(self::$KEY,$processes);
+	public function startStack() {
+		foreach ($this->getProcesses() as $process) {
+			$process->start();
+			$this->running[] = $process;
+		}
 	}
 	
-	public function getRunningProcesses() {
-		return $this->client->get(self::$KEY)?? [];
+	public function addProcess(Process $process) {
+		$processes = $this->getProcesses()?? [];
+		$processes[] = $process;
+		$this->client->set(self::$KEY,serialize($processes));
+	}
+	
+	public function getProcesses() {
+		return unserialize($this->client->get(self::$KEY))?? [];
 	}
 	
 	public function stillRunning() {
-		$running_procs = $this->getRunningProcesses();
-		foreach ($running_procs as $i => $process) {
+		
+		foreach ($this->running as $i => $process) {
 			/** @var Process $process */
 			if (!$process->isRunning()) {
-				unset($running_procs[$i]);
+				unset($this->running[$i]);
 			}
 		}
-		$this->client->set(self::$KEY,$running_procs);
-		return (bool)count($running_procs);
+		return (bool)count($this->running);
 	}
-
+	
 }

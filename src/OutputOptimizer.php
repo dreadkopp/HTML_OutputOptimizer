@@ -6,6 +6,7 @@ namespace dreadkopp\HTML_OutputOptimizer;
 use dreadkopp\HTML_OutputOptimizer\Handler\HtmlMinify;
 use dreadkopp\HTML_OutputOptimizer\Handler\ImageOptimizer;
 use dreadkopp\HTML_OutputOptimizer\Library\Lazyload;
+use Predis\Connection\Parameters;
 use Symfony\Component\Process\Process;
 
 
@@ -229,17 +230,25 @@ class OutputOptimizer
         $execution_time = ($time_end - $time_start);
 
         $buffer .= '<!--optimized by HTMLOutputOptimizer. Optimizing process took: ' . $execution_time . ' seconds -->';
-		$store = AsyncProcessStore::getInstance();
-        while($store->stillRunning()) {
-        	
-        	dump('still processes running');
-        	dump($store->getRunningProcesses());
-			sleep(.5);
-		}
-
+		$this->dispatchAsyncJobs();
         return $buffer;
     }
 
+    private function dispatchAsyncJobs() {
+		/** @var Parameters $redis_params */
+		$redis_params = $this->cache->getConnection()->getParameters();
+		$redis_host = $redis_params->host;
+		$redis_db = $redis_params->database;
+		$redis_port = $redis_params->port;
+		$redis_pass = $redis_params->password;
+		$cmd = 'php ' . __DIR__ . '/Async_helper.php "' .
+			$redis_host . '" "' .
+			$redis_port . '" "' .
+			$redis_pass . '" "' .
+			$redis_db . '" "' .
+			$this->root_dir;
+		$this->executeAsyncShellCommand($cmd);
+	}
 
     /**
      * MOVE EACH IMAGE WE FIND IN THE HTML IN A CACHE FOLDER AND OPTIMIZE IF POSSIBLE
@@ -263,10 +272,23 @@ class OutputOptimizer
 		);
 		
     }
+	
+	/**
+	 * Execute a command on host for asyncronity
+	 *
+	 * @param null $comando
+	 * @throws Exception
+	 */
+	private function executeAsyncShellCommand($comando = null){
+		if(!$comando){
+			throw new \Exception("No command given");
+		}
+		@exec("/usr/bin/nohup ".$comando." > /dev/null 2>&1 &");
+	}
 
-   
+ 
 
-    
+ 
 
 
 
