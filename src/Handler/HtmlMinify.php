@@ -1,6 +1,6 @@
 <?php
 
-namespace dreadkopp\HTML_OutputOptimizer\src\Handler;
+namespace HTML_OutputOptimizer\src\Handler;
 
 class HtmlMinify
 {
