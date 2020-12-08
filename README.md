@@ -3,17 +3,16 @@
 Tool to rearrange you JS, cache and optimize your Images and minify your whole HTML output
 
 
-Required:
+# Required:
 
 Redis Cache
 Webp
 PHP-Imagick
 PHP-curl
-PHP >=5.6
-ImageOtimizer "ps/image-optimizer"
+PHP >=7
 nohub
 
-What it does:
+# What it does:
 
 * gathers all your external JS as well as inline JS and adds a combined js file per page in the cache_dir
 * optimizes your Images which are tagged with 'data-src' instead of 'src'
@@ -27,18 +26,27 @@ What it does:
 Using these optimizations Pagesize and Loadtime (as well as Pagespeedscore for Google) can be drastically reduced
 
 
-Installation:
+# Installation:
 
-... to come composer package will come in the future
+add to your composer.json repositories:
+
+"repositories": [
+ ...
+{
+"type": "git",
+"url" : "https://github.com/dreadkopp/HTML_OutputOptimizer.git"
+}
+...
+]
+
+then
+```composer require dreadkopp/html_outputoptimizer```
 
 
-Usage:
-
-//if you run this tool on the whole HTML output, echo DOCTYPE first since it will be stripped otherwise
-echo '<!DOCTYPE html>' . PHP_EOL;
+# Usage:
 
 
-//create a RedisCache Client (or use a existing one)
+### create a RedisCache Client (or use a existing one)
 $cache = new Predis\Client(
     [
         'scheme'   => 'tcp',
@@ -49,19 +57,46 @@ $cache = new Predis\Client(
     ]
 );
 
-//create a Instance of the Optimizer
+### create a Instance of the Optimizer
 
-$optimizer = new OutputOptimizer($cache, <root_dir>, <cache_dir>);
-//optimal add local JS files
+$optimizer = new OutputOptimizer($cache, <root_dir>, <cache_dir>, <?public_cache_dir>, <?public_image_dir>, <?use_base64_images>, <?skip_first_x_images> );
+
+### (optional) add a version to your js
+$optimizer->setJSVersion('9000.1');
+
+### (optional) add extra (this will be added to bottom unescaped)
+$optimizer->setExtra('<!-- OPTIMIZED! -->');
+
+### (optional) add local JS files
 $optimizer->addLocalJSPath(<path_to_local_js_file>);
 
 
-//use $optimizer in Outputbuffer or your Template Compiler for example in output buffer
+### use $optimizer in Outputbuffer or your Template Compiler for example in output buffer
+
+```
 ob_start(array($optimizer, 'sanitize_output'));
+```
+
+or if you i.e. use a template System
+```
+...
+$output = $view->render();
+return $optimizer->sanitize_output($output)
+...
+
+```
 
 
+### (optional) Extend handling of async Jobs
+for image optimization OutputOptimizer dispatches async jobs to re-render the images in background
 
-WHY?
+if you got a asynchronous worker for that (i.e via supervisord), you might want to extend the OutputOptimizer::dispatchAsyncJobs() to do nothing
+and have a worker instance that uses AsyncProcessStore::startStack() or ArrayProcessStore::dispatchChunk()
+
+also there is a constant LOAD_THRESHOLD_PERCENT that you might want to override. When this threshold is exceeded within the last minute, ImageOptimizer will bail
+
+
+# WHY?
 
 * to optimize Images which are added dynamically (for example in a webshop) or those that are served from a external source without optimization
 
