@@ -5,6 +5,7 @@ namespace dreadkopp\HTML_OutputOptimizer\Handler;
 
 
 use http\Client;
+use Predis\Connection\Parameters;
 
 class ImageOptimizer
 {
@@ -159,11 +160,12 @@ class ImageOptimizer
 		\Predis\Client $cache
 	)
 	{
+		/** @var Parameters $redis_params */
 		$redis_params = $cache->getConnection()->getParameters();
-		$redis_host = $redis_params['host'];
-		$redis_db = $redis_params['database'];
-		$redis_port = $redis_params['port'];
-		$redis_pass = $redis_params['password'];
+		$redis_host = $redis_params->host;
+		$redis_db = $redis_params->database;
+		$redis_port = $redis_params->port;
+		$redis_pass = $redis_params->password;
 		
 	
 		$returnstring = 'data-src="' . $source[1] . '"';
