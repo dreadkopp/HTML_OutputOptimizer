@@ -234,7 +234,7 @@ class OutputOptimizer
         return $buffer;
     }
 
-    private function dispatchAsyncJobs() {
+    protected function dispatchAsyncJobs() {
 		/** @var Parameters $redis_params */
 		$redis_params = $this->cache->getConnection()->getParameters();
 		$redis_host = $redis_params->host;

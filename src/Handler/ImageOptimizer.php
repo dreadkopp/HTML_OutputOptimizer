@@ -238,6 +238,7 @@ class ImageOptimizer
 							$redis_port,
 						]
 				   );
+					/** @var AsyncProcessStore $store */
 				   $store = AsyncProcessStore::getInstance($cache);
 				   $store->addProcess($process);
 		

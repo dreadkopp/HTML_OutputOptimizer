@@ -11,6 +11,8 @@ use Symfony\Component\Process\Process;
 
 class AsyncProcessStore
 {
+	const CHUNKSIZE = 8;
+	
 	private static $_instance = null;
 	private $client;
 	private static $KEY = 'ASYNC_PROCESSES';
@@ -37,16 +39,36 @@ class AsyncProcessStore
 		$this->client = $client;
 	}
 	
+	public function clearStack() {
+		$this->client->del(self::$KEY);
+	}
+	
+	public function dispatchChunk() {
+		$processes = $this->getProcesses()?? [];
+		if (empty($processes)){
+			return;
+		}
+		$chunk = array_chunk($processes,self::CHUNKSIZE);
+		foreach ($chunk[0] as $process) {
+			/** @var Process $process */
+			$key = md5(json_encode($process->getCommandLine()));
+			$process->run();
+			unset($processes[$key]);
+		}
+		$this->client->set(self::$KEY,serialize($processes));
+	}
+	
 	public function startStack() {
 		foreach ($this->getProcesses() as $process) {
 			$process->start();
 			$this->running[] = $process;
 		}
+		$this->client->del(self::$KEY);
 	}
 	
 	public function addProcess(Process $process) {
 		$processes = $this->getProcesses()?? [];
-		$processes[] = $process;
+		$processes[md5(json_encode($process->getCommandLine()))] = $process;
 		$this->client->set(self::$KEY,serialize($processes));
 	}
 	
