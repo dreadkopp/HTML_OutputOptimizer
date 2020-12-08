@@ -70,6 +70,9 @@ class AsyncProcessStore
 	}
 	
 	public function addProcess(Process $process) {
+		if ($process->isStarted()) {
+			throw new \Exception('only processes that haven\'t been started yet can be added');
+		}
 		$processes = $this->getProcesses()?? [];
 		$processes[md5(json_encode($process->getCommandLine()))] = $process;
 		$this->client->set(self::$KEY,serialize($processes));
