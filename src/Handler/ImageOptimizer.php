@@ -71,6 +71,11 @@ class ImageOptimizer
 	 */
 	private function cache_image($url, $saveto)
 	{
+		//naive check for file extension.... if it is not present or i.e. versioned, bail
+		$parts = explode('.',$url);
+		if (strlen(array_pop($parts)) > 4) {
+			return false;
+		}
 		
 		if (file_exists($saveto)) {
 			return true;
