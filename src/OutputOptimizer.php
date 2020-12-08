@@ -229,6 +229,13 @@ class OutputOptimizer
         $execution_time = ($time_end - $time_start);
 
         $buffer .= '<!--optimized by HTMLOutputOptimizer. Optimizing process took: ' . $execution_time . ' seconds -->';
+		$store = AsyncProcessStore::getInstance();
+        while($store->stillRunning()) {
+        	
+        	dump('still processes running');
+        	dump($store->getRunningProcesses());
+			sleep(.5);
+		}
 
         return $buffer;
     }

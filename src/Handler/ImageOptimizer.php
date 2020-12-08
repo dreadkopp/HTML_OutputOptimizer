@@ -4,6 +4,7 @@
 namespace dreadkopp\HTML_OutputOptimizer\Handler;
 
 
+use dreadkopp\HTML_OutputOptimizer\AsyncProcessStore;
 use dreadkopp\HTML_OutputOptimizer\OutputOptimizer;
 use http\Client;
 use Predis\Connection\Parameters;
@@ -250,8 +251,8 @@ class ImageOptimizer
 						]
 				   );
 				   $process->start();
-			
-						$process->start();
+				   $store = AsyncProcessStore::getInstance();
+				   $store->addProcess($process);
 		
 			//self::executeAsyncShellCommand($cmd);
 			$returnstring = 'src="' . $source[1] . '"';
