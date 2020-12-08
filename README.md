@@ -61,12 +61,31 @@ $cache = new Predis\Client(
 
 $optimizer = new OutputOptimizer($cache, <root_dir>, <cache_dir>, <?public_cache_dir>, <?public_image_dir>, <?use_base64_images>, <?skip_first_x_images> );
 
+### (optional) add a version to your js
+$optimizer->setJSVersion('9000.1');
+
+### (optional) add extra (this will be added to bottom unescaped)
+$optimizer->setExtra('<!-- OPTIMIZED! -->');
+
 ### (optional) add local JS files
 $optimizer->addLocalJSPath(<path_to_local_js_file>);
 
 
 ### use $optimizer in Outputbuffer or your Template Compiler for example in output buffer
+
+```
 ob_start(array($optimizer, 'sanitize_output'));
+```
+
+or if you i.e. use a template System
+```
+...
+$output = $view->render();
+return $optimizer->sanitize_output($output)
+...
+
+```
+
 
 ### (optional) Extend handling of async Jobs
 for image optimization OutputOptimizer dispatches async jobs to re-render the images in background
