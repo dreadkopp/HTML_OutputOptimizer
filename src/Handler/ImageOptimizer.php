@@ -149,8 +149,6 @@ class ImageOptimizer
     
     public static function optimizeAndCacheImages(
     	$source,
-		$redis_pass,
-		$redis_db,
 		$image_root_fs,
 		$root_dir,
 		$cache_dir,
@@ -161,8 +159,12 @@ class ImageOptimizer
 		\Predis\Client $cache
 	)
 	{
+		$redis_params = $cache->getConnection()->getParameters();
+		$redis_host = $redis_params['host'];
+		$redis_db = $redis_params['database'];
+		$redis_port = $redis_params['port'];
+		$redis_pass = $redis_params['password'];
 		
-		dd($cache->getOptions());
 	
 		$returnstring = 'data-src="' . $source[1] . '"';
 	
@@ -213,8 +215,6 @@ class ImageOptimizer
 				@unlink($path);
 				@unlink($cachepath.$filename. '.webp');
 			}
-			$redis_host = 'localhost';
-			$redis_port = '6379';
 			$cmd = 'php ' . __DIR__ . '/ImageOptimizer_helper.php "' .
 				$source[1] . '" "' .
 				$path . '" "' .

@@ -244,8 +244,6 @@ class OutputOptimizer
 
         return ImageOptimizer::optimizeAndCacheImages(
         	$source,
-			$redis_pass,
-			$redis_db,
 			$this->image_root_fs,
 			$this->root_dir,
 			$this->cache_dir,
