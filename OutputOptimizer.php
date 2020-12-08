@@ -36,98 +36,7 @@ class OutputOptimizer
 
 
 
-    const LAZYLOADJS = ' //Lazy loading, refine to check / show per element
-    function throttle(fn, threshhold, scope) {
-      threshhold || (threshhold = 250);
-      var last,
-          deferTimer;
-      return function () {
-        var context = scope || this;
     
-        var now = +new Date,
-            args = arguments;
-        if (last && now < last + threshhold) {
-          // hold on to it
-          clearTimeout(deferTimer);
-          deferTimer = setTimeout(function () {
-            last = now;
-            fn.apply(context, args);
-          }, threshhold);
-        } else {
-          last = now;
-          fn.apply(context, args);
-        }
-      };
-    }
-    
-    
-    $(window).on("resize scroll load", throttle(function () {
-        checkForLazyLoad();
-    },100));
-
-
-    function checkForLazyLoad(){
-        var images = $("img[data-src]");
-        if (images) {
-            images.each(function (el, img) {
-                if ($(this).optimisticIsInViewport()) {
-                    img.setAttribute("src", img.getAttribute("data-src"));
-                    img.onload = function () {
-                        img.removeAttribute("data-src");
-                    };
-                }
-            });
-        }
-        var images_back = $("img[data-background]");
-        if (images_back) {
-            images_back.each(function (el, img) {
-                if ($(this).optimisticIsInViewport()) {
-                    $(img).css("background-image", \'url(\' + img.getAttribute("data-background") + \')\');
-                    img.onload = function () {
-                        img.removeAttribute("data-background");
-                    };
-                }
-            });
-        }
-        
-        var iframes = $("iframe[data-src]");
-        if (iframes) {
-            iframes.each(function (el, iframe) {
-                if ($(iframe).optimisticIsInViewport()) {
-                    iframe.setAttribute("src", iframe.getAttribute("data-src"));
-                    iframe.onload = function () {
-                        iframe.removeAttribute("data-src");
-                    };
-                }
-            });
-        }
-     };
-
-    $.fn.isInViewport = function () {
-        if (typeof $(this).offset() !== "undefined") {
-            var elementTop = $(this).offset().top;
-            var elementBottom = elementTop + $(this).outerHeight();
-
-            var viewportTop = $(window).scrollTop();
-            var viewportBottom = viewportTop + window.innerHeight;
-
-            return elementBottom > viewportTop && elementTop < viewportBottom;
-        }
-        return false;
-    };
-
-    $.fn.optimisticIsInViewport = function () {
-        if (typeof $(this).offset() !== "undefined") {
-            var elementTop = $(this).offset().top;
-            var elementBottom = elementTop + $(this).outerHeight();
-
-            var viewportTop = $(window).scrollTop();
-            var viewportBottom = viewportTop + 2 * window.innerHeight;
-
-            return elementBottom >= viewportTop && elementTop < viewportBottom;
-        }
-        return false;
-    };';
 
     /**
      * Add extra strings to add to bottom of output
@@ -166,7 +75,7 @@ class OutputOptimizer
     }
 
     public function addLocalJSPath ($path) {
-        array_push($this->localjs, $path);
+        $this->localjs[] = $path;
     }
 
     /**
@@ -178,23 +87,7 @@ class OutputOptimizer
     public function sanitize_output($buffer)
     {
         $time_start = microtime(true);
-        //TODO: replace all <img .... src=" .... " ... /> with <img .... data-src=" .... " ... />
-        $search = array(
-            '/\>[^\S ]+/s',  // strip whitespaces after tags, except space
-            '/[^\S ]+\</s',  // strip whitespaces before tags, except space
-            '/(\s)+/s',       // shorten multiple whitespace sequences
-            '/<!DOCTYPE html>/', //initial DOCTYPE which would be minified as well... no worries, we add it later
-            '/no_optimization_script/',
-
-        );
-        $replace = array(
-            '>',
-            '<',
-            '\\1',
-            '',
-            'script',
-
-        );
+       
 
 //optimize and Cache images
         $searchimage = '/data-src\s*=\s*"(.+?)"/';
@@ -267,7 +160,7 @@ class OutputOptimizer
 
             //3. add lazyload js .... needs jquery being imported in externals or locals before ...
             //TODO: add logic to check if jquery is present, else import
-            $this->combined_js .= self::LAZYLOADJS;
+            $this->combined_js .= \Lazyload::LAZYLOADJS;
 
 
             //4. find all inline js and collect
@@ -315,7 +208,7 @@ class OutputOptimizer
 
         //insert inline css in head
         $buffer_exloded = explode('<head>',$buffer,2);
-        $buffer_exloded[1] = $buffer_exloded[1]??''; 
+        $buffer_exloded[1] = $buffer_exloded[1]??'';
         $buffer = $buffer_exloded[0] . '<head><style>' .$this->inline_style .'</style>' . $buffer_exloded[1];
 
 
@@ -323,7 +216,7 @@ class OutputOptimizer
         $buffer = preg_replace('/<!--(.*)-->/Uis', '', $buffer);
 
         //minify buffer
-        $buffer = preg_replace($search, $replace, $buffer);
+        $buffer = \HtmlMinify::minify($buffer);
 
         //add extra
         $buffer .= $this->extra;
@@ -347,115 +240,25 @@ class OutputOptimizer
     private function optimizeAndCacheImages($source, $redis_pass, $redis_db)
     {
 
-        $returnstring = 'data-src="' . $source[1] . '"';
-
-        if ((strpos($source[1], 'cache') !== false)) {
-            return $returnstring;
-        }
-
-        $tmp = explode('.', $source[1]);
-        $filetype = end($tmp);
-        $filename = hash('md5', $source[1]);
-        $cachepath = $this->root_dir . $this->cache_dir;
-        if (!file_exists($cachepath)) {
-            mkdir($cachepath, 0770, true);
-        }
-        $cachedAndOptimizedName = $filename . '.' . $filetype;
-        $path = $cachepath . $cachedAndOptimizedName;
-
-        //if cached file exists and is not older than expire time, else create/update image in cache and update b64
-        if (file_exists($path) && (time()-filemtime($path) < self::CACHETIME - 10)) {
-
-            if( strpos( $_SERVER['HTTP_ACCEPT'], 'image/webp' ) !== false && file_exists($cachepath.$filename . '.webp')) {
-                $cachedAndOptimizedName = $filename . '.webp';
-            }
-
-            if ($this->use_b64_images) {
-                if ($this->skip_counter >= $this->skip_x_lazy_images) {
-                    $base64data = $this->getBase64Image($cachedAndOptimizedName);
-                    $returnstring = ' src="' . $base64data . '"' .' data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
-                } else {
-                    $this->skip_counter++;
-                    $returnstring = ' src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
-                }
-            } else {
-                if ($this->skip_counter >= $this->skip_x_lazy_images) {
-                    $returnstring = ' data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
-                } else {
-                    $this->skip_counter++;
-                    $returnstring = ' src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
-
-                }
-            }
-
-        } else {
-
-
-            
-            if (file_exists($path)){
-                @unlink($path);
-                @unlink($cachepath.$filename. '.webp');
-            }
-            
-            $cmd = 'php ' . __DIR__ . '/ImageOptimizer_helper.php "' .
-                $source[1] . '" "' .
-                $path . '" "' .
-                $cachedAndOptimizedName . '" "' .
-                $this->root_dir . '" "' .
-                $this->image_root_fs . '" "' .
-                $redis_pass . '" "' .
-                $redis_db . '" "' .
-                self::CACHETIME . '" "' .
-                $this->redis_host. '" "' .
-                $this->redis_port . '"';
-
-
-/*            $process = new Process(['php', __DIR__ . '/ImageOptimizer_helper.php ', $source[1], $path,$cachedAndOptimizedName,$this->root_dir,
-                $this->image_root_fs, $redis_pass,$redis_db,self::CACHETIME,$this->redis_host, $this->redis_port]);
-
-            $process->run();*/
-
-             $this->executeAsyncShellCommand($cmd);
-            $returnstring = 'src="' . $source[1] . '"';
-        }
-
-        return $returnstring;
-
+        return ImageOptimizer::optimizeAndCacheImages(
+        	$source,
+			$redis_pass,
+			$redis_db,
+			$this->image_root_fs,
+			$this->root_dir,
+			$this->cache_dir,
+			$this->skip_counter,
+			$this->skip_x_lazy_images,
+			$this->public_cache_dir,
+			$this->use_b64_images,
+			$this->cache
+		);
+		
     }
 
-    /**
-     * Execute a command on host for asyncronity
-     *
-     * @param null $comando
-     * @throws Exception
-     */
-    private function executeAsyncShellCommand($comando = null){
-        if(!$comando){
-            throw new \Exception("No command given");
-        }
-        @exec("/usr/bin/nohup ".$comando." > /dev/null 2>&1 &");
-    }
+   
 
-
-    /**
-     * Converts an image to base64 and puts that info in redis cache
-     *
-     * @param $file
-     * @param $cachedFileName
-     * @return string
-     */
-    private function getBase64Image($cachedFileName) {
-
-            $cachekey = 'B64IMAGE:'.str_replace(".","",$cachedFileName);
-            /** @var $this->>cache Predis\Client */
-            $cacheddata = $this->cache->get($cachekey);
-            if ($cacheddata) {
-                return $cacheddata;
-            } else {
-                return '';
-            }
-
-    }
+    
 
 
 

@@ -4,6 +4,8 @@
 namespace vendor\dreadkopp\HTML_OutputOptimizer;
 
 
+use http\Client;
+
 class ImageOptimizer
 {
     private $cache = null;
@@ -144,4 +146,131 @@ class ImageOptimizer
             }
         }
     }
+    
+    public static function optimizeAndCacheImages(
+    	$source,
+		$redis_pass,
+		$redis_db,
+		$image_root_fs,
+		$root_dir,
+		$cache_dir,
+		&$skip_counter,
+		$skip_x_lazy_images,
+		$public_cache_dir,
+		$use_b64_images = false,
+		\Predis\Client $cache
+	)
+	{
+		
+		dd($cache->getOptions());
+	
+		$returnstring = 'data-src="' . $source[1] . '"';
+	
+		if ((strpos($source[1], 'cache') !== false)) {
+			return $returnstring;
+		}
+	
+		$tmp = explode('.', $source[1]);
+		$filetype = end($tmp);
+		$filename = hash('md5', $source[1]);
+		$cachepath = $root_dir . $cache_dir;
+		if (!file_exists($cachepath)) {
+			mkdir($cachepath, 0770, true);
+		}
+		$cachedAndOptimizedName = $filename . '.' . $filetype;
+		$path = $cachepath . $cachedAndOptimizedName;
+	
+		//if cached file exists and is not older than expire time, else create/update image in cache and update b64
+		if (file_exists($path) && (time()-filemtime($path) < self::CACHETIME - 10)) {
+		
+			if( strpos( $_SERVER['HTTP_ACCEPT'], 'image/webp' ) !== false && file_exists($cachepath.$filename . '.webp')) {
+				$cachedAndOptimizedName = $filename . '.webp';
+			}
+		
+			if ($use_b64_images) {
+				if ($skip_counter >= $skip_x_lazy_images) {
+					$base64data = self::getBase64Image($cachedAndOptimizedName,$cache);
+					$returnstring = ' src="' . $base64data . '"' .' data-src="' . $public_cache_dir . $cachedAndOptimizedName . '"';
+				} else {
+					$skip_counter++;
+					$returnstring = ' src="' . $public_cache_dir . $cachedAndOptimizedName . '"';
+				}
+			} else {
+				if ($skip_counter >= $skip_x_lazy_images) {
+					$returnstring = ' data-src="' . $public_cache_dir . $cachedAndOptimizedName . '"';
+				} else {
+					$skip_counter++;
+					$returnstring = ' src="' . $public_cache_dir . $cachedAndOptimizedName . '"';
+				
+				}
+			}
+		
+		} else {
+		
+		
+		
+			if (file_exists($path)){
+				@unlink($path);
+				@unlink($cachepath.$filename. '.webp');
+			}
+			$redis_host = 'localhost';
+			$redis_port = '6379';
+			$cmd = 'php ' . __DIR__ . '/ImageOptimizer_helper.php "' .
+				$source[1] . '" "' .
+				$path . '" "' .
+				$cachedAndOptimizedName . '" "' .
+				$root_dir . '" "' .
+				$image_root_fs . '" "' .
+				$redis_pass . '" "' .
+				$redis_db . '" "' .
+				self::CACHETIME . '" "' .
+				$redis_host. '" "' .
+				$redis_port . '"';
+		
+		
+			/*            $process = new Process(['php', __DIR__ . '/ImageOptimizer_helper.php ', $source[1], $path,$cachedAndOptimizedName,$this->root_dir,
+							$this->image_root_fs, $redis_pass,$redis_db,self::CACHETIME,$this->redis_host, $this->redis_port]);
+			
+						$process->run();*/
+		
+			self::executeAsyncShellCommand($cmd);
+			$returnstring = 'src="' . $source[1] . '"';
+		}
+	
+		return $returnstring;
+	
+	}
+	
+	/**
+	 * Converts an image to base64 and puts that info in redis cache
+	 *
+	 * @param $file
+	 * @param $cachedFileName
+	 * @return string
+	 */
+	private static function getBase64Image($cachedFileName, $cache) {
+		
+		$cachekey = 'B64IMAGE:'.str_replace(".","",$cachedFileName);
+		/** @var $cache Predis\Client */
+		$cacheddata = $cache->get($cachekey);
+		if ($cacheddata) {
+			return $cacheddata;
+		} else {
+			return '';
+		}
+		
+	}
+	
+	/**
+	 * Execute a command on host for asyncronity
+	 *
+	 * @param null $comando
+	 * @throws Exception
+	 */
+	private static function executeAsyncShellCommand($comando = null){
+		if(!$comando){
+			throw new \Exception("No command given");
+		}
+		@exec("/usr/bin/nohup ".$comando." > /dev/null 2>&1 &");
+	}
 }
