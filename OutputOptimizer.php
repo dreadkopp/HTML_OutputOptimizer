@@ -4,6 +4,7 @@
 namespace vendor\dreadkopp\HTML_OutputOptimizer;
 
 use Symfony\Component\Process\Process;
+use vendor\dreadkopp\HTML_OutputOptimizer\src\Handler\ImageOptimizer;
 
 
 class OutputOptimizer

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace vendor\dreadkopp\HTML_OutputOptimizer;
+namespace vendor\dreadkopp\HTML_OutputOptimizer\src\Handler;
 
 
 use http\Client;
