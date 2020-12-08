@@ -74,6 +74,8 @@ for image optimization OutputOptimizer dispatches async jobs to re-render the im
 if you got a asynchronous worker for that (i.e via supervisord), you might want to extend the OutputOptimizer::dispatchAsyncJobs() to do nothing
 and have a worker instance that uses AsyncProcessStore::startStack() or ArrayProcessStore::dispatchChunk()
 
+also there is a constant LOAD_THRESHOLD_PERCENT that you might want to override. When this threshold is exceeded within the last minute, ImageOptimizer will bail
+
 
 # WHY?
 
