@@ -1,5 +1,6 @@
 <?php
 
+namespace dreadkopp\HTML_OutputOptimizer\Library;
 
 class Lazyload
 {

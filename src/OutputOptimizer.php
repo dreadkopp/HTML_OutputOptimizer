@@ -5,6 +5,7 @@ namespace dreadkopp\HTML_OutputOptimizer;
 
 use dreadkopp\HTML_OutputOptimizer\Handler\HtmlMinify;
 use dreadkopp\HTML_OutputOptimizer\Handler\ImageOptimizer;
+use dreadkopp\HTML_OutputOptimizer\Library\Lazyload;
 use Symfony\Component\Process\Process;
 
 
@@ -162,7 +163,7 @@ class OutputOptimizer
 
             //3. add lazyload js .... needs jquery being imported in externals or locals before ...
             //TODO: add logic to check if jquery is present, else import
-            $this->combined_js .= \Lazyload::LAZYLOADJS;
+            $this->combined_js .= Lazyload::LAZYLOADJS;
 
 
             //4. find all inline js and collect
