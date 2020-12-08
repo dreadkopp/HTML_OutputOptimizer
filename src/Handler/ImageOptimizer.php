@@ -231,12 +231,13 @@ class ImageOptimizer
 				$redis_port . '"';
 		
 		
+				new self($source[1], $path, $cachedAndOptimizedName, $cache, OutputOptimizer::CACHETIME, $root_dir, $image_root_fs);
 			/*            $process = new Process(['php', __DIR__ . '/ImageOptimizer_helper.php ', $source[1], $path,$cachedAndOptimizedName,$this->root_dir,
 							$this->image_root_fs, $redis_pass,$redis_db,sOutputOptimizer::CACHETIME,$this->redis_host, $this->redis_port]);
 			
 						$process->run();*/
 		
-			self::executeAsyncShellCommand($cmd);
+			//self::executeAsyncShellCommand($cmd);
 			$returnstring = 'src="' . $source[1] . '"';
 		}
 	
