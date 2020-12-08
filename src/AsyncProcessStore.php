@@ -15,7 +15,7 @@ class AsyncProcessStore
 	
 	private static $_instance = null;
 	private $client;
-	private static $KEY = 'ASYNC_PROCESSES';
+	private static $PREFIX = 'ASYNC_PROCESSES:';
 	private $running = [];
 	
 	
@@ -39,7 +39,8 @@ class AsyncProcessStore
 	}
 	
 	public function clearStack() {
-		$this->client->del(self::$KEY);
+		$keys = $this->client->keys(self::$PREFIX.'*');
+		$this->client->del($keys);
 	}
 	
 	public function dispatchChunk() {
@@ -53,33 +54,36 @@ class AsyncProcessStore
 			$key = md5(json_encode($process->getCommandLine()));
 			$process->start();
 			$this->running[] = $process;
-			unset($processes[$key]);
+			$this->client->del(self::$PREFIX.$key);
 		}
-		$this->client->set(self::$KEY,serialize($processes));
 		while ($this->stillRunning()) {
 			usleep(50000);
 		}
 	}
 	
 	public function startStack() {
-		foreach ($this->getProcesses() as $process) {
+		$processes = $this->getProcesses();
+		foreach ($processes as $process) {
 			$process->start();
 			$this->running[] = $process;
 		}
-		$this->client->del(self::$KEY);
+		$this->clearStack();
 	}
 	
 	public function addProcess(Process $process) {
 		if ($process->isStarted()) {
 			throw new \Exception('only processes that haven\'t been started yet can be added');
 		}
-		$processes = $this->getProcesses()?? [];
-		$processes[md5(json_encode($process->getCommandLine()))] = $process;
-		$this->client->set(self::$KEY,serialize($processes));
+		$this->client->set(self::$PREFIX.md5(json_encode($process->getCommandLine())),serialize($process));
 	}
 	
 	public function getProcesses() {
-		return unserialize($this->client->get(self::$KEY))?? [];
+		$keys = $this->client->keys(self::$PREFIX.'*');
+		$processes = [];
+		foreach ($keys as $key) {
+			$processes[] = unserialize($this->client->get($key),['allowed_classes' => [Process::class]]);
+		}
+		return $processes;
 	}
 	
 	public function stillRunning() {

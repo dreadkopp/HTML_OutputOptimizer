@@ -22,9 +22,4 @@ $cache = new Predis\Client(
 );
 /** @var \dreadkopp\HTML_OutputOptimizer\AsyncProcessStore $store */
 $store = \dreadkopp\HTML_OutputOptimizer\AsyncProcessStore::getInstance($cache);
-$store->startStack();
-while($store->stillRunning()) {
-	
-	dump(count($store->getRunningProcesses()) .' processes left');
-	sleep(.5);
-}
+$store->dispatchChunk();
