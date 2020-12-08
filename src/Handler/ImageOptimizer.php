@@ -4,6 +4,7 @@
 namespace dreadkopp\HTML_OutputOptimizer\Handler;
 
 
+use dreadkopp\HTML_OutputOptimizer\OutputOptimizer;
 use http\Client;
 use Predis\Connection\Parameters;
 
@@ -185,7 +186,7 @@ class ImageOptimizer
 		$path = $cachepath . $cachedAndOptimizedName;
 	
 		//if cached file exists and is not older than expire time, else create/update image in cache and update b64
-		if (file_exists($path) && (time()-filemtime($path) < self::CACHETIME - 10)) {
+		if (file_exists($path) && (time()-filemtime($path) < OutputOptimizer::CACHETIME - 10)) {
 		
 			if( strpos( $_SERVER['HTTP_ACCEPT'], 'image/webp' ) !== false && file_exists($cachepath.$filename . '.webp')) {
 				$cachedAndOptimizedName = $filename . '.webp';
@@ -225,13 +226,13 @@ class ImageOptimizer
 				$image_root_fs . '" "' .
 				$redis_pass . '" "' .
 				$redis_db . '" "' .
-				self::CACHETIME . '" "' .
+				OutputOptimizer::CACHETIME . '" "' .
 				$redis_host. '" "' .
 				$redis_port . '"';
 		
 		
 			/*            $process = new Process(['php', __DIR__ . '/ImageOptimizer_helper.php ', $source[1], $path,$cachedAndOptimizedName,$this->root_dir,
-							$this->image_root_fs, $redis_pass,$redis_db,self::CACHETIME,$this->redis_host, $this->redis_port]);
+							$this->image_root_fs, $redis_pass,$redis_db,sOutputOptimizer::CACHETIME,$this->redis_host, $this->redis_port]);
 			
 						$process->run();*/
 		
