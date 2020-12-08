@@ -38,8 +38,9 @@ class ImageOptimizer
 		$count_cpu = shell_exec('cat /proc/cpuinfo | grep processor | wc -l');
 		$current_load = sys_getloadavg()[0];
 		$threshold_percent = OutputOptimizer::LOAD_THRESHOLD_PERCENT;
-		if ($current_load / $count_cpu > $threshold_percent / 100) {
-			echo 'skipping due to high load';
+		if (($current_load / $count_cpu) > ($threshold_percent / 100)) {
+			//bail due to high load
+			return;
 		}
 		
 		//if takes longer than this something has gone south badly
