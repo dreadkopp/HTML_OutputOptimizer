@@ -8,13 +8,13 @@ class ImageOptimizer
 {
     private $cache = null;
     private $root_dir = '';
+    private $image_root_fs = '';
 
-    public function __construct($source, $cachepath, $cachedAndOptimizedName, $cache, $cachetime, $root_dir)
+    public function __construct($source, $cachepath, $cachedAndOptimizedName, $cache, $cachetime, $root_dir, $image_root_fs)
     {
-
-
         $this->cache = $cache;
         $this->root_dir = $root_dir;
+        $this->image_root_fs = $image_root_fs;
         $this->optimize($source, $cachepath, $cachedAndOptimizedName, $cachetime);
     }
 
@@ -33,6 +33,8 @@ class ImageOptimizer
     		echo 'skipping due to high load';
 		}
 
+        //if takes longer than this something has gone south badly
+        set_time_limit(10);
 
         if ($this->cache_image($source, $cachepath)) {
             //optimize
@@ -44,8 +46,8 @@ class ImageOptimizer
             $base64 = 'data:image/' . $type . ';base64,' . base64_encode($small_image_data);
             $this->cache->set($cachekey, $base64);
             $this->cache->expire($cachekey, $cachetime);
-            //1140 is default width of biggest bootstrap container... sound like a reasonable max width
-            $this->handleImage($cachepath,1140,true);
+            //1320 is xxl width of biggest bootstrap container... sound like a reasonable max width
+            $this->handleImage($cachepath,1320,true);
 
         }
     }
@@ -72,14 +74,14 @@ class ImageOptimizer
             }
             if ($save) {
                 $image->writeImage($path);
-                $webp_cmd = '/usr/bin/cwebp ' . $path . ' -o ' . $path . '.webp';
+                $path_wo_filetype = preg_replace("/\.[^.]+$/", "", $path);
+                $webp_cmd = '/usr/bin/cwebp ' . $path . ' -o ' . $path_wo_filetype . '.webp';
                 exec($webp_cmd);
             } else {
                 return $image->getImageBlob();
             }
-
         } catch (\Exception $e) {
-            //well... some images are just broken....
+            echo $e->getMessage();
         }
 
     }
@@ -99,10 +101,15 @@ class ImageOptimizer
         }
 
         if (!(strpos($url, 'http') !== false)) {
-            $url = $this->root_dir . rtrim($url, "/");
-            $url = realpath($url);
-            if ($url) {
-                return copy($url, $saveto);
+            $baseurl = $this->image_root_fs . rtrim($url, "/");
+            $baseurl = realpath($baseurl);
+            if (!file_exists($baseurl)) {
+                $baseurl = $this->root_dir . rtrim($url, "/");
+                $baseurl = realpath($baseurl);
+            }
+            if ($baseurl) {
+                echo "copy " . $baseurl . ' tot ' . '$saveto';
+                return copy($baseurl, $saveto);
             } else {
                 return false;
             }
@@ -111,12 +118,17 @@ class ImageOptimizer
             curl_setopt($ch, CURLOPT_HEADER, 0);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
             $raw = curl_exec($ch);
 
             curl_close($ch);
 
 
             if (strpos($raw, '<!DOCTYPE HTML') !== false) {
+                return false;
+            }
+            if (!$raw) {
                 return false;
             }
 

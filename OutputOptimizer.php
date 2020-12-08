@@ -3,6 +3,8 @@
 
 namespace vendor\dreadkopp\HTML_OutputOptimizer;
 
+use Symfony\Component\Process\Process;
+
 
 class OutputOptimizer
 {
@@ -14,14 +16,20 @@ class OutputOptimizer
     private $redis_db = null;
     private $combined_js = '';
     private $inline_js = '';
+    private $inline_style = '';
     private $localjs = [];
     private $root_dir = '';
+    private $image_root_fs = '';
     private $cache_dir = '';
+    private $public_cache_dir = '';
     private $redis_host = '';
     private $redis_port = '';
     private $extra = '';
+    private $use_b64_images = true;
+    private $skip_x_lazy_images = 0;
+    private $skip_counter = 0;
+    private $js_version = '1';
 
-    const USE_B64_ENCODED_IMAGES = false;
     const CACHETIME = 3600;
     const ADD_LOCAL_JS = true;
     const LOAD_THRESHOLD_PERCENT = 60;
@@ -59,7 +67,7 @@ class OutputOptimizer
 
 
     function checkForLazyLoad(){
-        var images = $("img[data-src]").not(\'.owl-lazy\');
+        var images = $("img[data-src]");
         if (images) {
             images.each(function (el, img) {
                 if ($(this).optimisticIsInViewport()) {
@@ -105,6 +113,7 @@ class OutputOptimizer
 
             return elementBottom > viewportTop && elementTop < viewportBottom;
         }
+        return false;
     };
 
     $.fn.optimisticIsInViewport = function () {
@@ -115,8 +124,9 @@ class OutputOptimizer
             var viewportTop = $(window).scrollTop();
             var viewportBottom = viewportTop + 2 * window.innerHeight;
 
-            return elementBottom > viewportTop && elementTop < viewportBottom;
+            return elementBottom >= viewportTop && elementTop < viewportBottom;
         }
+        return false;
     };';
 
     /**
@@ -127,12 +137,22 @@ class OutputOptimizer
         $this->extra = $extra;
     }
 
+    public function setJSVersion($tag) {
+        $this->js_version = $tag;
+    }
+
+
     /**
      * OutputOptimizer constructor.
-     * @param Predis\Client $cache
+     * @param \Predis\Client $cache
+     * @param $root_dir
+     * @param $cache_dir
+     * @param string $public_cache_dir
      */
-    public function __construct(\Predis\Client $cache, $root_dir, $cache_dir )
+    public function __construct(\Predis\Client $cache, $root_dir, $cache_dir, $public_cache_dir = '', $image_root_fs = '',$use_b64 = true, $skip_x_lazy_images = 0 )
     {
+        $this->skip_x_lazy_images = $skip_x_lazy_images;
+        $this->use_b64_images = $use_b64;
         $this->cache = $cache;
         $redis_params = $cache->getConnection()->getParameters()->toArray();
         $this->redis_pass = $redis_params['password'];
@@ -141,6 +161,8 @@ class OutputOptimizer
         $this->redis_port = $redis_params['port'];
         $this->root_dir =  $root_dir;
         $this->cache_dir = $cache_dir;
+        $this->public_cache_dir = $public_cache_dir?:$cache_dir;
+        $this->image_root_fs = $image_root_fs?:$root_dir;
     }
 
     public function addLocalJSPath ($path) {
@@ -209,7 +231,7 @@ class OutputOptimizer
             $buffer = preg_replace( '#<script(.*?)>(.*?)</script>#is','',$buffer);
 
             //put all the JS on bottom
-            $relative_path = str_replace($this->root_dir , '', $path);
+            $relative_path = $this->public_cache_dir . $cachedAndOptimizedName . '?v='.$this->js_version;
             $buffer .=  '<script src="'. $relative_path . '"></script>';
             $buffer .= '<script>' . $this->inline_js .'</script>';
 
@@ -271,16 +293,37 @@ class OutputOptimizer
 
 
             //put all the JS on bottom
-            $relative_path = str_replace($this->root_dir , '', $path);
+            $relative_path = $this->public_cache_dir . $cachedAndOptimizedName. '?v='.$this->js_version;
             $buffer .=  '<script src="'. $relative_path . '"></script>';
             $buffer .= '<script>' .$this->inline_js .'</script>';
         }
 
-        //minify buffer
-        $buffer = preg_replace($search, $replace, $buffer);
+        $dom = new \DOMDocument();
+        @$dom->loadHTML($buffer);
+        $style = $dom->getElementsByTagName('style');
+        foreach ($style as $s){
+            $s = $s->nodeValue;
+            $s = preg_replace('/<!--(.*)-->/Uis', '$1', $s);
+            $this->inline_style .= $s ;
+        }
+
+
+        //remove old style apperances
+        $buffer = preg_replace( '#<style(.*?)>(.*?)</style>#is','',$buffer);
+
+
+
+        //insert inline css in head
+        $buffer_exloded = explode('<head>',$buffer,2);
+        $buffer_exloded[1] = $buffer_exloded[1]??''; 
+        $buffer = $buffer_exloded[0] . '<head><style>' .$this->inline_style .'</style>' . $buffer_exloded[1];
+
 
         // remove comments ...
         $buffer = preg_replace('/<!--(.*)-->/Uis', '', $buffer);
+
+        //minify buffer
+        $buffer = preg_replace($search, $replace, $buffer);
 
         //add extra
         $buffer .= $this->extra;
@@ -323,29 +366,57 @@ class OutputOptimizer
         //if cached file exists and is not older than expire time, else create/update image in cache and update b64
         if (file_exists($path) && (time()-filemtime($path) < self::CACHETIME - 10)) {
 
-            if( strpos( $_SERVER['HTTP_ACCEPT'], 'image/webp' ) !== false && file_exists($path . '.webp')) {
-                $cachedAndOptimizedName = $cachedAndOptimizedName . '.webp';
+            if( strpos( $_SERVER['HTTP_ACCEPT'], 'image/webp' ) !== false && file_exists($cachepath.$filename . '.webp')) {
+                $cachedAndOptimizedName = $filename . '.webp';
             }
 
-            if (self::USE_B64_ENCODED_IMAGES) {
-                $base64data = $this->getBase64Image($cachedAndOptimizedName);
-                $returnstring = ' src="' . $base64data . '"' .' data-src="' . $this->cache_dir . $cachedAndOptimizedName . '"';
+            if ($this->use_b64_images) {
+                if ($this->skip_counter >= $this->skip_x_lazy_images) {
+                    $base64data = $this->getBase64Image($cachedAndOptimizedName);
+                    $returnstring = ' src="' . $base64data . '"' .' data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
+                } else {
+                    $this->skip_counter++;
+                    $returnstring = ' src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
+                }
             } else {
-                $returnstring = ' data-src="' . $this->cache_dir . $cachedAndOptimizedName . '"';
+                if ($this->skip_counter >= $this->skip_x_lazy_images) {
+                    $returnstring = ' data-src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
+                } else {
+                    $this->skip_counter++;
+                    $returnstring = ' src="' . $this->public_cache_dir . $cachedAndOptimizedName . '"';
+
+                }
             }
 
         } else {
+
+
             
             if (file_exists($path)){
-                unlink($path);
-                unlink($path. '.webp');
+                @unlink($path);
+                @unlink($cachepath.$filename. '.webp');
             }
             
-            $cmd = 'php ' . __DIR__ . '/ImageOptimizer_helper.php "' . $source[1] . '" "' . $path . '" "' . $cachedAndOptimizedName . '" "' . $this->root_dir . '" "' . $redis_pass . '" "' . $redis_db . '" "' . self::CACHETIME . '" "' . $this->redis_host. '" "' . $this->redis_port . '"';
-            //  for DBG
-            //require_once ($this->root_dir . 'vendor/dreadkopp/HTML_OutputOptimizer/ImageOptimizer.php');
-            //new ImageOptimizer($source[1], $path, $cachedAndOptimizedName, $this->cache, self::CACHETIME, $this->root_dir);
-            @$this->executeAsyncShellCommand($cmd);
+            $cmd = 'php ' . __DIR__ . '/ImageOptimizer_helper.php "' .
+                $source[1] . '" "' .
+                $path . '" "' .
+                $cachedAndOptimizedName . '" "' .
+                $this->root_dir . '" "' .
+                $this->image_root_fs . '" "' .
+                $redis_pass . '" "' .
+                $redis_db . '" "' .
+                self::CACHETIME . '" "' .
+                $this->redis_host. '" "' .
+                $this->redis_port . '"';
+
+
+/*            $process = new Process(['php', __DIR__ . '/ImageOptimizer_helper.php ', $source[1], $path,$cachedAndOptimizedName,$this->root_dir,
+                $this->image_root_fs, $redis_pass,$redis_db,self::CACHETIME,$this->redis_host, $this->redis_port]);
+
+            $process->run();*/
+
+             $this->executeAsyncShellCommand($cmd);
+            $returnstring = 'src="' . $source[1] . '"';
         }
 
         return $returnstring;
@@ -360,7 +431,7 @@ class OutputOptimizer
      */
     private function executeAsyncShellCommand($comando = null){
         if(!$comando){
-            throw new Exception("No command given");
+            throw new \Exception("No command given");
         }
         @exec("/usr/bin/nohup ".$comando." > /dev/null 2>&1 &");
     }
