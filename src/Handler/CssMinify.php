@@ -8,6 +8,7 @@ class CssMinify
 {
 	public static function minify($buffer) {
 		
+		$inline_style = '';
 		$dom = new \DOMDocument();
 		@$dom->loadHTML($buffer);
 		$style = $dom->getElementsByTagName('style');
