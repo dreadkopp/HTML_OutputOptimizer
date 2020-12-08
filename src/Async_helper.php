@@ -20,11 +20,11 @@ $cache = new Predis\Client(
 		'password' => $redis_pass,
 	]
 );
+/** @var \dreadkopp\HTML_OutputOptimizer\AsyncProcessStore $store */
 $store = \dreadkopp\HTML_OutputOptimizer\AsyncProcessStore::getInstance($cache);
 $store->startStack();
 while($store->stillRunning()) {
 	
-	dump('still processes running');
-	dump($store->getRunningProcesses());
+	dump(count($store->getRunningProcesses()) .' processes left');
 	sleep(.5);
 }

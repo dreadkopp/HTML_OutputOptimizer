@@ -246,7 +246,7 @@ class OutputOptimizer
 			$redis_port . '" "' .
 			$redis_pass . '" "' .
 			$redis_db . '" "' .
-			$this->root_dir;
+			$this->root_dir . '"';
 		$this->executeAsyncShellCommand($cmd);
 	}
 
