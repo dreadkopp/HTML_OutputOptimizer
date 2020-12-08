@@ -7,6 +7,7 @@ namespace dreadkopp\HTML_OutputOptimizer\Handler;
 use dreadkopp\HTML_OutputOptimizer\OutputOptimizer;
 use http\Client;
 use Predis\Connection\Parameters;
+use Symfony\Component\Process\Process;
 
 class ImageOptimizer
 {
@@ -231,11 +232,26 @@ class ImageOptimizer
 				$redis_port . '"';
 		
 		
-				new self($source[1], $path, $cachedAndOptimizedName, $cache, OutputOptimizer::CACHETIME, $root_dir, $image_root_fs);
-			/*            $process = new Process(['php', __DIR__ . '/ImageOptimizer_helper.php ', $source[1], $path,$cachedAndOptimizedName,$this->root_dir,
-							$this->image_root_fs, $redis_pass,$redis_db,sOutputOptimizer::CACHETIME,$this->redis_host, $this->redis_port]);
+				//new self($source[1], $path, $cachedAndOptimizedName, $cache, OutputOptimizer::CACHETIME, $root_dir, $image_root_fs);
+				   $process = new Process(
+						[
+							'php ',
+							__DIR__ . '/ImageOptimizer_helper.php',
+							$source[1],
+							$path,
+							$cachedAndOptimizedName,
+							$root_dir,
+							$image_root_fs,
+							$redis_pass,
+							$redis_db,
+							OutputOptimizer::CACHETIME,
+							$redis_host,
+							$redis_port,
+						]
+				   );
+				   $process->start();
 			
-						$process->run();*/
+						$process->start();
 		
 			//self::executeAsyncShellCommand($cmd);
 			$returnstring = 'src="' . $source[1] . '"';
