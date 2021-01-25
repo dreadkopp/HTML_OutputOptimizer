@@ -44,6 +44,7 @@ class JSMinify
 			//put all the JS on bottom
 			$relative_path = $public_cache_dir . $cachedAndOptimizedName . '?v=' . $js_version;
 			$buffer .= '<script src="' . $relative_path . '"></script>';
+			$inline_js = preg_replace('/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/m','$1',$inline_js);
 			$buffer .= '<script>' . $inline_js . '</script>';
 			
 			return $buffer;
