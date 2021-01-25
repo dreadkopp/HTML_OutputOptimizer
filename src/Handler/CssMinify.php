@@ -26,11 +26,10 @@ class CssMinify
 		$buffer = preg_replace('#<style(.*?)>(.*?)</style>#is', '', $buffer);
 		
 		
-		//insert inline css in head
-		$buffer_exloded = explode('<head>', $buffer, 2);
+		//insert inline css in head... however after meta
+		$buffer_exloded = explode('</head>', $buffer, 2);
 		$buffer_exloded[1] = $buffer_exloded[1] ?? '';
-		$buffer = $buffer_exloded[0] . '<head><style>' . $inline_style . '</style>' . $buffer_exloded[1];
-		
+		$buffer = $buffer_exloded[0] . '<style>' . $inline_style . '</style></head>' . $buffer_exloded[1];		
 		return $buffer;
 	}
 	
