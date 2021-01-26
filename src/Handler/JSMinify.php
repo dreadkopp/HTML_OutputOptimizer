@@ -75,6 +75,12 @@ class JSMinify
         //3. add lazyload js .... needs jquery being imported in externals or locals before ...
         //TODO: add logic to check if jquery is present, else import
         $combined_js .= Lazyload::LAZYLOADJS;
+        
+        //clear old cached instance if exists
+        if (file_exists($path)) {
+            unlink($path);
+        }
+
 
         $fp = fopen($path, 'x');
         if (fwrite($fp, $combined_js)) {
