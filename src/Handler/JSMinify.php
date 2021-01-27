@@ -89,7 +89,8 @@ class JSMinify
         if (file_exists($path) && (time() - filemtime($path) < OutputOptimizer::CACHETIME * 24 * 7 - 10)) {
             return;
         }
-
+        
+        $combined_js = '';
 
         if (count($local_js)) {
             foreach ($local_js as $local_js_path) {
