@@ -7,33 +7,32 @@ namespace dreadkopp\HTML_OutputOptimizer\Handler;
 use dreadkopp\HTML_OutputOptimizer\AsyncProcessStore;
 use dreadkopp\HTML_OutputOptimizer\OutputOptimizer;
 use Exception;
-use http\Client;
 use Imagick;
 use ImagickException;
 use Predis\Connection\Parameters;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 class ImageOptimizer
 {
-	private $cache = null;
-	private $root_dir = '';
+	private $cache         = null;
+	private $root_dir      = '';
 	private $image_root_fs = '';
 	
-	public function __construct($source, $cachepath, $cachedAndOptimizedName, $cache, $cachetime, $root_dir, $image_root_fs)
+	public function __construct($source, $cachepath, $hashed_name, $root_dir, $image_root_fs)
 	{
-		$this->cache = $cache;
 		$this->root_dir = $root_dir;
 		$this->image_root_fs = $image_root_fs;
-		$this->optimize($source, $cachepath, $cachedAndOptimizedName, $cachetime);
+		$this->optimize($source, $cachepath, $hashed_name);
 	}
 	
 	/**
 	 *
 	 * @param $source
 	 * @param $cachepath
-	 * @param $cachedAndOptimizedName
+	 * @param $hashed_name
 	 */
-	private function optimize($source, $cachepath, $cachedAndOptimizedName, $cachetime)
+	private function optimize($source, $cachepath, $hashed_name)
 	{
 		$count_cpu = shell_exec('cat /proc/cpuinfo | grep processor | wc -l');
 		$current_load = sys_getloadavg()[0];
@@ -47,18 +46,8 @@ class ImageOptimizer
 		set_time_limit(10);
 		
 		if ($this->cache_image($source, $cachepath)) {
-			//optimize
-			$cachekey = 'B64IMAGE:' . str_replace(".", "", $cachedAndOptimizedName);
-			$type = pathinfo($cachepath, PATHINFO_EXTENSION);
-			
-			$small_image_data = $this->handleImage($cachepath, 96);
-			
-			$base64 = 'data:image/' . $type . ';base64,' . base64_encode($small_image_data);
-			$this->cache->set($cachekey, $base64);
-			$this->cache->expire($cachekey, $cachetime);
 			//1320 is xxl width of biggest bootstrap container... sound like a reasonable max width
 			$this->handleImage($cachepath, 1320, true);
-			
 		}
 	}
 	
@@ -72,7 +61,7 @@ class ImageOptimizer
 	private function cache_image($url, $saveto)
 	{
 		//naive check for file extension.... if it is not present or i.e. versioned, bail
-		$parts = explode('.',$url);
+		$parts = explode('.', $url);
 		if (strlen(array_pop($parts)) > 4) {
 			return false;
 		}
@@ -90,6 +79,7 @@ class ImageOptimizer
 			}
 			if ($baseurl) {
 				echo "copy " . $baseurl . ' tot ' . '$saveto';
+				
 				return copy($baseurl, $saveto);
 			} else {
 				return false;
@@ -119,6 +109,7 @@ class ImageOptimizer
 			$fp = fopen($saveto, 'x');
 			if (fwrite($fp, $raw)) {
 				fclose($fp);
+				
 				return true;
 			} else {
 				return false;
@@ -147,8 +138,12 @@ class ImageOptimizer
 				$image->resizeImage($width, 1920, Imagick::FILTER_LANCZOS, 1, true);
 			}
 			if ($save) {
-				$image->writeImage($path);
 				$path_wo_filetype = preg_replace("/\.[^.]+$/", "", $path);
+				if (file_exists($path)) {
+					@unlink($path);
+					@unlink($path_wo_filetype . '.webp');
+				}
+				$image->writeImage($path);
 				$webp_cmd = '/usr/bin/cwebp ' . $path . ' -o ' . $path_wo_filetype . '.webp';
 				exec($webp_cmd);
 			} else {
@@ -173,6 +168,9 @@ class ImageOptimizer
 		\Predis\Client $cache
 	)
 	{
+		
+		$cache_dir .= 'img/';
+		
 		/** @var Parameters $redis_params */
 		$redis_params = $cache->getConnection()->getParameters();
 		$redis_host = $redis_params->host;
@@ -194,59 +192,40 @@ class ImageOptimizer
 		if (!file_exists($cachepath)) {
 			mkdir($cachepath, 0770, true);
 		}
-		$cachedAndOptimizedName = $filename . '.' . $filetype;
-		$path = $cachepath . $cachedAndOptimizedName;
+		$hashed_name = $filename . '.' . $filetype;
+		$path = $cachepath . $hashed_name;
 		
 		//if cached file exists and is not older than expire time, else create/update image in cache and update b64
 		if (file_exists($path) && (time() - filemtime($path) < OutputOptimizer::CACHETIME - 10)) {
 			
 			if (strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false && file_exists($cachepath . $filename . '.webp')) {
-				$cachedAndOptimizedName = $filename . '.webp';
+				$hashed_name = $filename . '.webp';
 			}
 			
-			if ($use_b64_images) {
-				if ($skip_counter >= $skip_x_lazy_images) {
-					$base64data = self::getBase64Image($cachedAndOptimizedName, $cache);
-					$returnstring = ' src="' . $base64data . '"' . ' data-src="' . $public_cache_dir . $cachedAndOptimizedName . '"';
-				} else {
-					$skip_counter++;
-					$returnstring = ' src="' . $public_cache_dir . $cachedAndOptimizedName . '"';
-				}
+			$public_cache_dir .= 'img/';
+			
+			if ($skip_counter >= $skip_x_lazy_images) {
+				$returnstring = ' data-src="' . $public_cache_dir . $hashed_name . '"';
 			} else {
-				if ($skip_counter >= $skip_x_lazy_images) {
-					$returnstring = ' data-src="' . $public_cache_dir . $cachedAndOptimizedName . '"';
-				} else {
-					$skip_counter++;
-					$returnstring = ' src="' . $public_cache_dir . $cachedAndOptimizedName . '"';
-					
-				}
+				$skip_counter++;
+				$returnstring = ' src="' . $public_cache_dir . $hashed_name . '"';
+				
 			}
 			
 		} else {
 			
-			
-			if (file_exists($path)) {
-				@unlink($path);
-				@unlink($cachepath . $filename . '.webp');
-			}
-			
-			
 			$process = new Process(
 				[
 					'php',
-					__DIR__ . '/../ImageOptimizer_helper.php',
+					realpath(__DIR__ . '/../ImageOptimizer_helper.php'),
 					$source[1],
 					$path,
-					$cachedAndOptimizedName,
+					$hashed_name,
 					$root_dir,
 					$image_root_fs,
-					$redis_pass,
-					$redis_db,
-					OutputOptimizer::CACHETIME,
-					$redis_host,
-					$redis_port,
 				]
 			);
+			
 			/** @var AsyncProcessStore $store */
 			$store = AsyncProcessStore::getInstance($cache);
 			$store->addProcess($process);
@@ -255,27 +234,6 @@ class ImageOptimizer
 		}
 		
 		return $returnstring;
-		
-	}
-	
-	/**
-	 * Converts an image to base64 and puts that info in redis cache
-	 *
-	 * @param $file
-	 * @param $cachedFileName
-	 * @return string
-	 */
-	private static function getBase64Image($cachedFileName, $cache)
-	{
-		
-		$cachekey = 'B64IMAGE:' . str_replace(".", "", $cachedFileName);
-		/** @var $cache Predis\Client */
-		$cacheddata = $cache->get($cachekey);
-		if ($cacheddata) {
-			return $cacheddata;
-		} else {
-			return '';
-		}
 		
 	}
 	
