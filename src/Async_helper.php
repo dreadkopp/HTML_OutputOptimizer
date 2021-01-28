@@ -4,7 +4,7 @@ $redis_host = $argv[1];
 $redis_port = $argv[2];
 $redis_pass = $argv[3];
 $redis_db = $argv[4];
-$root = $argv[5];
+$root = $argv[5].'/';
 
 
 require_once($root . 'vendor/autoload.php');
