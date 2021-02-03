@@ -198,7 +198,11 @@ class ImageOptimizer
 		//if cached file exists and is not older than expire time, else create/update image in cache and update b64
 		if (file_exists($path) && (time() - filemtime($path) < OutputOptimizer::CACHETIME - 10)) {
 			
-			if (strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false && file_exists($cachepath . $filename . '.webp')) {
+			if (
+				isset($_SERVER['HTTP_ACCEPT']) &&
+				strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false && 
+				file_exists($cachepath . $filename . '.webp')
+			){
 				$hashed_name = $filename . '.webp';
 			}
 			
