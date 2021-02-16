@@ -10,5 +10,5 @@ services:
     #- /path/to/your/key:/etc/nginx/nginx.key
     #- /path/to/your/cert:/etc/nginx/nginx.crt
     environment:
-      - TARGET=http://www.thephantomx.com
+      - TARGET=yourRealURLOrIP
 
