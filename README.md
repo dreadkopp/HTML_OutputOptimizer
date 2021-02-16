@@ -34,6 +34,8 @@ Using these optimizations Pagesize and Loadtime (as well as Pagespeedscore for G
 
 checkout this project, adjust default docker-compose.yml and spin it up next to your webserver
 
+TARGET environment will be either your full url aka: 'https://www.example.com' or your webservers ip i.e. 'https://10.0.0.1'
+
 caching and optimizing will be done in the container for GET requests only. Other methods are passed as it is
 
 
