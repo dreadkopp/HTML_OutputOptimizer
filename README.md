@@ -5,12 +5,12 @@ Tool to rearrange you JS, cache and optimize your Images and minify your whole H
 
 # Required:
 
-Redis Cache
-Webp
-PHP-Imagick
-PHP-curl
-PHP >=7
-nohub
+* Redis Cache
+* Webp
+* PHP-Imagick
+* PHP-curl
+* PHP >=7
+* nohup
 
 # What it does:
 

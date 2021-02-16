@@ -102,7 +102,10 @@ class AsyncProcessStore
 		if ($process->isStarted()) {
 			throw new Exception('only processes that haven\'t been started yet can be added');
 		}
-		$this->client->set(self::$PREFIX . md5(json_encode($process->getCommandLine())), serialize($process));
+		$this->client->set(
+		    self::$PREFIX . md5(json_encode($process->getCommandLine())),
+            serialize($process)
+        );
 	}
 	
 }

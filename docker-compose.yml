@@ -1,0 +1,11 @@
+services:
+  optimizer:
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile
+    ports:
+    - 2080:80
+    - 2443:443
+    environment:
+      - TARGET=yoururl
+

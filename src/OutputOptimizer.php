@@ -87,13 +87,16 @@ class OutputOptimizer
 	 * @param $buffer
 	 * @return null|string|string[]
 	 */
-	public function sanitize_output($buffer)
+	public function sanitize_output($buffer,$force_image_optimization = false)
 	{
 		$time_start = microtime(true);
 		
 		
 		//optimize and Cache images
 		$searchimage = '/data-src\s*=\s*"(.+?)"/';
+		if ($force_image_optimization) {
+		    $searchimage = '/<img[^>]+src\s*=\s*"(.+?)"/';
+        }
 		$buffer = preg_replace_callback($searchimage, function ($matches) {
 			return ImageOptimizer::optimizeAndCacheImages(
 				$matches,
