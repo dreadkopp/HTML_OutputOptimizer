@@ -26,12 +26,23 @@ Tool to rearrange you JS, cache and optimize your Images and minify your whole H
 Using these optimizations Pagesize and Loadtime (as well as Pagespeedscore for Google) can be drastically reduced
 
 
-# Installation:
 
-add to your composer.json repositories:
+# Usage:
+
+
+## A ) use the standalone option as a proxy
+
+checkout this project, adjust default docker-compose.yml and spin it up next to your webserver
+
+caching and optimizing will be done in the container for GET requests only. Other methods are passed as it is
+
+
+## B ) add as dependency
+
+### add to your composer.json repositories:
 
 "repositories": [
- ...
+...
 {
 "type": "git",
 "url" : "https://github.com/dreadkopp/HTML_OutputOptimizer.git"
@@ -41,10 +52,6 @@ add to your composer.json repositories:
 
 then
 ```composer require dreadkopp/html_outputoptimizer```
-
-
-# Usage:
-
 
 ### create a RedisCache Client (or use a existing one)
 $cache = new Predis\Client(
