@@ -90,6 +90,9 @@ foreach (get_headers_from_curl_response($header) as $_header) {
         continue;
     }
     foreach ($_header as $name => $__head) {
+        if (strpos($name,'Access') !== false) {
+            continue;
+        }
         header($name.': '.$__head);
     }
 }

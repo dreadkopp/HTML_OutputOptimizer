@@ -4,11 +4,11 @@ services:
       context: ./
       dockerfile: docker/Dockerfile
     ports:
-    - 2080:80
-    - 2443:443
+    - 80:80
+    - 443:443
     #volumes:
     #- /path/to/your/key:/etc/nginx/nginx.key
     #- /path/to/your/cert:/etc/nginx/nginx.crt
     environment:
-      - TARGET=yourRealURLOrIP
+      - TARGET=your_fqdn_or_ip
 
