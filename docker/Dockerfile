@@ -1,6 +1,6 @@
 FROM php:7.4.15-fpm-alpine3.13
 
-RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS redis curl curl-dev imagemagick imagemagick-dev composer nginx
+RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS redis curl curl-dev imagemagick imagemagick-dev composer nginx libwebp-tools
 RUN docker-php-ext-install curl
 RUN yes | pecl install imagick
 RUN docker-php-ext-enable imagick

@@ -6,6 +6,9 @@ services:
     ports:
     - 2080:80
     - 2443:443
+    #volumes:
+    #- /path/to/your/key:/etc/nginx/nginx.key
+    #- /path/to/your/cert:/etc/nginx/nginx.crt
     environment:
-      - TARGET=yoururl
+      - TARGET=http://www.thephantomx.com
 

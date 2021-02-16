@@ -88,7 +88,6 @@ class ImageOptimizer
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_HEADER, 0);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
 			curl_setopt($ch, CURLOPT_TIMEOUT, 3);
 			$raw = curl_exec($ch);
@@ -165,7 +164,8 @@ class ImageOptimizer
 		$skip_x_lazy_images,
 		$public_cache_dir,
 		$use_b64_images = false,
-		\Predis\Client $cache
+		\Predis\Client $cache,
+        $force_image_optimization =  false
 	)
 	{
 		
@@ -200,7 +200,7 @@ class ImageOptimizer
 			
 			if (
 				isset($_SERVER['HTTP_ACCEPT']) &&
-				strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false && 
+				strpos($_SERVER['HTTP_ACCEPT'], 'image/webp') !== false &&
 				file_exists($cachepath . $filename . '.webp')
 			){
 				$hashed_name = $filename . '.webp';
@@ -209,10 +209,10 @@ class ImageOptimizer
 			$public_cache_dir .= 'img/';
 			
 			if ($skip_counter >= $skip_x_lazy_images) {
-				$returnstring = ' data-src="' . $public_cache_dir . $hashed_name . '"';
+				$returnstring =  $public_cache_dir . $hashed_name ;
 			} else {
 				$skip_counter++;
-				$returnstring = ' src="' . $public_cache_dir . $hashed_name . '"';
+				$returnstring = $public_cache_dir . $hashed_name ;
 				
 			}
 			
@@ -234,10 +234,12 @@ class ImageOptimizer
 			$store = AsyncProcessStore::getInstance($cache);
 			$store->addProcess($process);
 			
-			$returnstring = 'src="' . $source[1] . '"';
+			$returnstring = $source[1];
 		}
 		
-		return $returnstring;
+		
+		return str_replace($source[1],$returnstring,$source[0]);
+		
 		
 	}
 	

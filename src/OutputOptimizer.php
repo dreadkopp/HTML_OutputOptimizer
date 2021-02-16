@@ -93,11 +93,11 @@ class OutputOptimizer
 		
 		
 		//optimize and Cache images
-		$searchimage = '/data-src\s*=\s*"(.+?)"/';
+		$searchimage = '/<img[^>]+data-src\s*=\s*"(.+?)"/';
 		if ($force_image_optimization) {
 		    $searchimage = '/<img[^>]+src\s*=\s*"(.+?)"/';
         }
-		$buffer = preg_replace_callback($searchimage, function ($matches) {
+		$buffer = preg_replace_callback($searchimage, function ($matches) use ($force_image_optimization) {
 			return ImageOptimizer::optimizeAndCacheImages(
 				$matches,
 				$this->image_root_fs,
@@ -107,7 +107,8 @@ class OutputOptimizer
 				$this->skip_x_lazy_images,
 				$this->public_cache_dir,
 				$this->use_b64_images,
-				$this->cache
+				$this->cache,
+                $force_image_optimization
 			);
 		}, $buffer
 		);

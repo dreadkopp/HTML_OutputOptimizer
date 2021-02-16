@@ -66,7 +66,7 @@ class JSMinify
                 curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
                 $raw = curl_exec($ch);
                 curl_close($ch);
-                $combined_js .= $raw . ';';
+                $combined_js .= PHP_EOL.$raw .PHP_EOL ;
             }
 
         }

@@ -93,5 +93,6 @@ foreach (get_headers_from_curl_response($header) as $_header) {
         header($name.': '.$__head);
     }
 }
-echo $optimizer->sanitize_output($body,false);
+$optimizer->addLocalJSPath(__DIR__.'/src/Library/jquery.3.5.1.slim.min.js');
+echo $optimizer->sanitize_output($body,true);
 
