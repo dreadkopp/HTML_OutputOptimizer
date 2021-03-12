@@ -47,8 +47,11 @@ class JSMinify
             return self::finalize($buffer, $inline_js, $public_cache_dir, $cachedAndOptimizedName, $js_version);
 
         }
-
-
+    
+    
+        if (file_exists($path)) {
+            unlink($path);
+        }
         // find js sources and collect
         $dom = new DOMDocument();
         @$dom->loadHTML($buffer);
@@ -71,13 +74,16 @@ class JSMinify
 
         }
 
-        if (file_exists($path)) {
-            unlink($path);
+        
+        try {
+            $fp = fopen($path, 'x');
+            if (fwrite($fp, $combined_js)) {
+                fclose($fp);
+            }
+        } catch (\Exception $e) {
+            //prevent timing issues where file already exists due to multiple users accessing the page
         }
-        $fp = fopen($path, 'x');
-        if (fwrite($fp, $combined_js)) {
-            fclose($fp);
-        }
+
 
         return self::finalize($buffer, $inline_js, $public_cache_dir, $cachedAndOptimizedName, $js_version);
     }
