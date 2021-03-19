@@ -50,7 +50,12 @@ class JSMinify
     
     
         if (file_exists($path)) {
-            unlink($path);
+            try {
+                unlink($path);
+            } catch (\Exception $e) {
+                //prevent race condition where file already is removed due to multiple users accessing the page
+            }
+            
         }
         // find js sources and collect
         $dom = new DOMDocument();
@@ -81,7 +86,7 @@ class JSMinify
                 fclose($fp);
             }
         } catch (\Exception $e) {
-            //prevent timing issues where file already exists due to multiple users accessing the page
+            //prevent race condition where file already exists due to multiple users accessing the page
         }
 
 
