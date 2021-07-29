@@ -4,7 +4,7 @@ namespace dreadkopp\HTML_OutputOptimizer\Library;
 
 class Lazyload
 {
-	const LAZYLOADJS = ' //Lazy loading, refine to check / show per element
+    const LAZYLOADJS = ' //Lazy loading, refine to check / show per element
     function throttle(fn, threshhold, scope) {
       threshhold || (threshhold = 250);
       var last,
@@ -96,5 +96,5 @@ class Lazyload
         }
         return false;
     };';
-	
+    
 }

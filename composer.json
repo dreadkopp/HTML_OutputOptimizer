@@ -6,7 +6,7 @@
   "authors": [
     {
       "name": "Arne Ziegert",
-      "email": "arne@yoshi.dynu.com"
+      "email": "arne.ziegert@gmx.de"
     }
   ],
   "require": {
@@ -14,7 +14,7 @@
     "ext-imagick" : "*",
     "ext-curl" : "*",
     "ext-dom" : "*",
-    "predis/predis": "^1.1",
+    "ext-json" : "*",
     "symfony/process" : "^5"
   },
   "autoload": {
