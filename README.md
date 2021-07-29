@@ -5,10 +5,10 @@ Tool to rearrange you JS, cache and optimize your Images and minify your whole H
 
 # Required:
 
-Redis Cache
 Webp
 PHP-Imagick
 PHP-curl
+PHP-json
 PHP >=7
 nohub
 
@@ -46,20 +46,11 @@ then
 # Usage:
 
 
-### create a RedisCache Client (or use a existing one)
-$cache = new Predis\Client(
-    [
-        'scheme'   => 'tcp',
-        'host'     => '127.0.0.1',
-        'port'     => 6379,
-        'database' => <$redis_db>,
-        'password' => <$redis_pass>,
-    ]
-);
+
 
 ### create a Instance of the Optimizer
 
-$optimizer = new OutputOptimizer($cache, <root_dir>, <cache_dir>, <?public_cache_dir>, <?public_image_dir>, <?use_base64_images>, <?skip_first_x_images> );
+$optimizer = new OutputOptimizer(<root_dir>, <cache_dir>, <?public_cache_dir>, <?public_image_dir>, <?skip_first_x_images> );
 
 ### (optional) add a version to your js
 $optimizer->setJSVersion('9000.1');
