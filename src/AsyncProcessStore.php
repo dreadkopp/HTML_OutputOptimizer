@@ -21,6 +21,10 @@ class AsyncProcessStore
         if ($queue_location) {
             $this->queue_location = $queue_location;
         }
+        
+        if (!file_exists($this->queue_location)) {
+            file_put_contents($this->queue_location,'');
+        }
     }
     
     
@@ -99,6 +103,12 @@ class AsyncProcessStore
         
         $queue = json_decode(file_get_contents($this->queue_location), true);
         $queue[md5(json_encode($process->getCommandLine()))] = serialize($process);
+        file_put_contents($this->queue_location, json_encode($queue));
+    }
+    
+    public function removeProcessFromQueue(string $key) {
+        $queue = json_decode(file_get_contents($this->queue_location), true);
+        unset($queue[$key]);
         file_put_contents($this->queue_location, json_encode($queue));
     }
     
