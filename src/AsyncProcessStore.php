@@ -5,7 +5,6 @@ namespace dreadkopp\HTML_OutputOptimizer;
 
 
 use Exception;
-use Exceptions\MissingDependencyException;
 use Symfony\Component\Process\Process;
 
 class AsyncProcessStore
