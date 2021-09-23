@@ -22,7 +22,7 @@ class AsyncProcessStore
         }
         
         if (!file_exists($this->queue_location)) {
-            file_put_contents($this->queue_location,'');
+            file_put_contents($this->queue_location,'{}');
         }
     }
     
@@ -58,6 +58,11 @@ class AsyncProcessStore
     public function getProcesses()
     {
         $queue = json_decode(file_get_contents($this->queue_location), true);
+
+        if (!is_array($queue)) {
+            return [];
+        }
+
         $processes = [];
         foreach ($queue as $serialized) {
             $processes[] = unserialize($serialized, ['allowed_classes' => [Process::class]]);
@@ -91,7 +96,7 @@ class AsyncProcessStore
     
     public function clearStack()
     {
-        file_put_contents($this->queue_location, '');
+        file_put_contents($this->queue_location, '{}');
     }
     
     public function addProcess(Process $process)
@@ -99,7 +104,7 @@ class AsyncProcessStore
         if ($process->isStarted()) {
             throw new Exception('only processes that haven\'t been started yet can be added');
         }
-        
+
         $queue = json_decode(file_get_contents($this->queue_location), true);
         $queue[md5(json_encode($process->getCommandLine()))] = serialize($process);
         file_put_contents($this->queue_location, json_encode($queue));
